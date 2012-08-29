@@ -11,15 +11,15 @@ class Servant /*: public boost::enable_shared_from_this<Parser> */{
 public:
 	using Pointer = boost::shared_ptr<Servant>;
 
-	static auto Create(boost::asio::io_service& service, int port, int buffer_size, 
-			const Parser& parser, std::ostream& os) -> Pointer {
-		auto servant_ptr = Pointer(new Servant(parser, os));
+	static auto Create(boost::asio::io_service& service, const std::string& localhost_name, 
+			int port, int buffer_size, const Parser& parser, std::ostream& os) -> Pointer {
+		auto servant_ptr = Pointer(new Servant(localhost_name, port, parser, os));
 		
 		Manager::FuncDict for_upper_func_dict{};
 		
 		Manager::FuncDict for_lower_func_dict{};
 		for_lower_func_dict["search_key_hash"] = 
-			boost::bind(&Servant::DebugOutput, servant_ptr, _1, _2, _3);
+			boost::bind(&Servant::OnReceiveSearchKeyHash, servant_ptr, _1, _2, _3);
 		
 		auto manager_ptr = Manager::Create(
 			service, port, buffer_size, boost::bind(&Servant::PickupKey, servant_ptr, _1),
@@ -31,6 +31,10 @@ public:
 	auto SearchKeyHash(const std::vector<std::string>& keyward_list) -> void{
 		typename Parser::Command command{};
 		command["command"] =  "search_key_hash";
+		command["jump_count"] = 0;
+		command["hash_list"] = typename Parser::Command(Json::arrayValue);
+		command["src_host"] = this->localhost_name;
+		command["src_port"] = this->port;
 		for(const auto keyward : keyward_list){
 			command["search_text_list"].append(keyward);
 		}
@@ -58,12 +62,32 @@ private:
 			this->parser.Parse(byte_array) << std::endl;
 	}
 
-	Servant(const Parser& parser, std::ostream& os) 
-		: parser(parser), os(os){}
+	auto OnReceiveSearchKeyHash(
+			nr::P2pCore::Pointer core, nr::Session::Pointer session, 
+			const utl::ByteArray& byte_array) -> void {
+		auto command = this->parser.Parse(byte_array);
+		
+		this->os << "DEBUG(parsed byte_array):" << command << std::endl;
 
+		if(this->max_jump_count > command["jump_count"].asInt()){
+			command["jump_count"] = command["jump_count"].asInt() + 1;
+			core->BroadcastToUpper(this->parser.Combinate(command));
+		}
+		else{
+			//to do.	
+		}
+
+	}
+
+	Servant(const std::string& localhost_name, int port, const Parser& parser, std::ostream& os) 
+		: localhost_name(localhost_name), port(port), parser(parser), os(os), max_jump_count(3){}
+
+	std::string localhost_name;
+	int port;
 	Manager::Pointer manager_ptr;
 	Parser parser;
 	std::ostream& os;
+	int max_jump_count;
 };
 }
 

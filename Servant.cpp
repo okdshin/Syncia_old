@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 
 	const int buffer_size = 128;
 	
-	auto servant_ptr = Servant<JsonParser>::Create(service, server_port, buffer_size, 
+	auto servant_ptr = Servant<JsonParser>::Create(service, "127.0.0.1", server_port, buffer_size, 
 		JsonParser("command"), std::cout);
 
 	auto core_ptr = servant_ptr->GetCorePtr();
