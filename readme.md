@@ -4,9 +4,9 @@ Syncia is P2p servant application using Neuria.
 
 Required
 ----------------
-*cchace
-*boost (version >= 1.50)
-*gcc (version >= 4.7.1)
+* cchace  
+* boost (version >= 1.50)  
+* gcc (version >= 4.7.1)  
 
 Running Sample
 ----------------
