@@ -10,16 +10,16 @@ int main(int argc, char* argv[])
 {
 	
 	boost::asio::io_service service;
-	int server_port = 54321;
+	int local_port = 54321;
 	if(argc == 2)
 	{
-		server_port = boost::lexical_cast<int>(argv[1]);
+		local_port = boost::lexical_cast<int>(argv[1]);
 	}
 
 	const int buffer_size = 128;
 	
-	auto servant_ptr = Servant<JsonParser>::Create(service, "127.0.0.1", server_port, buffer_size, 
-		JsonParser("command"), std::cout);
+	auto servant_ptr = Servant<JsonParser>::Create(service, "127.0.0.1", local_port, 
+		buffer_size, JsonParser("command"), std::cout);
 
 	auto core_ptr = servant_ptr->GetCorePtr();
 	boost::thread t(boost::bind(&boost::asio::io_service::run, &service));
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 				const auto hostname = utl::GetInput<std::string>("hostname?:");
 				const auto port = utl::GetInput<int>("port?:");	
 
-				core_ptr->Connect(hostname, port);
+				servant_ptr->ConnectToUpperNode(hostname, port);
 			}	
 		}
 		catch(std::exception& e){
