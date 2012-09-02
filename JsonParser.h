@@ -11,20 +11,25 @@ namespace sy
 class JsonParser{
 public:
 	using Key = std::string;
-	using ParsedCommand = Json::Value;
+	using Command = Json::Value;
 
 	JsonParser(const std::string& key_name) : key_name(key_name){}
 
 	auto PickupKey(const utl::ByteArray& byte_array) -> Key {
-		return this->Parse(byte_array)[key_name].asString();
+		return Parse(byte_array)[key_name].asString();
 	}
 
-	auto Parse(const utl::ByteArray& byte_array) -> ParsedCommand {
+	auto Parse(const utl::ByteArray& byte_array) -> Command {
 		std::string command_str{byte_array.begin(), byte_array.end()};
 		Json::Value root{};
 		Json::Reader reader{};
 		reader.parse(command_str, root);
 		return root;
+	}
+
+	auto Combinate(const Command& command) -> utl::ByteArray {
+		Json::StyledWriter writer{};
+		return utl::String2ByteArray(writer.write(command));
 	}
 
 private:
