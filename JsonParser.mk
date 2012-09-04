@@ -1,7 +1,7 @@
 CXX = ccache g++ -std=gnu++0x
 CXXFLAGS = -Wall -g -D JSONPARSER_UNIT_TEST
 INCLUDES =
-LIBS = -ljsoncpp
+LIBS = -ljsoncpp -lboost_serialization -lboost_thread -ldl -lpthread -lboost_system -ljsoncpp -lcrypt
 OBJS = JsonParser.o
 PROGRAM = JsonParser.out
 

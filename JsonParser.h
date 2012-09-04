@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <jsoncpp/json.h>
-#include "neuria/Utility.h"
+#include "neuria/Neuria.h"
 
 namespace sy
 {
@@ -15,11 +15,11 @@ public:
 
 	JsonParser(const std::string& key_name) : key_name(key_name){}
 
-	auto PickupKey(const utl::ByteArray& byte_array) -> Key {
+	auto PickupKey(const nr::ByteArray& byte_array) -> Key {
 		return Parse(byte_array)[key_name].asString();
 	}
 
-	auto Parse(const utl::ByteArray& byte_array) -> Dict {
+	auto Parse(const nr::ByteArray& byte_array) -> Dict {
 		std::string command_str{byte_array.begin(), byte_array.end()};
 		Json::Value root{};
 		Json::Reader reader{};
@@ -27,9 +27,9 @@ public:
 		return root;
 	}
 
-	auto Combinate(const Dict& command) -> utl::ByteArray {
+	auto Combinate(const Dict& command) -> nr::ByteArray {
 		Json::StyledWriter writer{};
-		return utl::String2ByteArray(writer.write(command));
+		return nr::utl::String2ByteArray(writer.write(command));
 	}
 
 private:

@@ -6,7 +6,7 @@ using namespace sy;
 
 int main(int argc, char* argv[])
 {
-	auto json_str = utl::String2ByteArray(
+	auto json_str = nr::utl::String2ByteArray(
 			"{\"command\":\"check_version\", \"version\":\"0.1\"}");
 
 	auto json_parser = JsonParser("command");
