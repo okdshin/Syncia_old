@@ -169,7 +169,7 @@ private:
 		}
 		else{
 			this->os << "send answer!" << std::endl;
-			nr::Send(this->service, this->core_ptr,
+			nr::Send(this->core_ptr,
 				command["route"][self_index-1]["route_servant"]["address"].asString(), 
 				command["route"][self_index-1]["route_servant"]["port"].asInt(),
 				this->parser.Combinate(command));
