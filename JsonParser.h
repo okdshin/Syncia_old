@@ -11,7 +11,7 @@ namespace sy
 class JsonParser{
 public:
 	using Key = std::string;
-	using Command = Json::Value;
+	using Dict = Json::Value;
 
 	JsonParser(const std::string& key_name) : key_name(key_name){}
 
@@ -19,7 +19,7 @@ public:
 		return Parse(byte_array)[key_name].asString();
 	}
 
-	auto Parse(const utl::ByteArray& byte_array) -> Command {
+	auto Parse(const utl::ByteArray& byte_array) -> Dict {
 		std::string command_str{byte_array.begin(), byte_array.end()};
 		Json::Value root{};
 		Json::Reader reader{};
@@ -27,7 +27,7 @@ public:
 		return root;
 	}
 
-	auto Combinate(const Command& command) -> utl::ByteArray {
+	auto Combinate(const Dict& command) -> utl::ByteArray {
 		Json::StyledWriter writer{};
 		return utl::String2ByteArray(writer.write(command));
 	}

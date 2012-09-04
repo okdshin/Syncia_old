@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 				const auto keywards = utl::GetInput<std::string>("keywards?:");
 				std::vector<std::string> keyward_list{};
 				boost::split(keyward_list, keywards, boost::is_space());
-				servant_ptr->SearchKeyHash(keyward_list);
+				servant_ptr->QuerySearchKeyHash(keyward_list);
 			}
 			else if(command == "connect"){
 				const auto hostname = utl::GetInput<std::string>("hostname?:");

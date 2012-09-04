@@ -1,9 +1,12 @@
 #pragma once
 //Servant:20120827
 #include <iostream>
+#include <algorithm>
+#include <cassert>
 #include "neuria/FuncController.h"
 #include "neuria/P2pCore.h"
 #include "JsonParser.h"
+#include <jsoncpp/value.h>
 
 namespace sy
 {
@@ -18,9 +21,12 @@ public:
 		auto controller_ptr = Controller::Create(service,
 			boost::bind(&Servant::PickupKey, servant_ptr, _1));
 
-		controller_ptr->Register("search_key_hash",
-			boost::bind(&Servant::OnReceiveSearchKeyHash, servant_ptr, _1, _2));
+		controller_ptr->Register("search_key_hash_query",
+			boost::bind(&Servant::OnReceiveSearchKeyHashQuery, servant_ptr, _1, _2));
 	
+		controller_ptr->Register("search_key_hash_answer",
+			boost::bind(&Servant::OnReceiveSearchKeyHashAnswer, servant_ptr, _1, _2));
+		
 		auto core_ptr = nr::P2pCore::Create(service, port, buffer_size, 
 			boost::bind(&Servant::OnAccept, servant_ptr, _1),
 			boost::bind(&Controller::CallMatchFunc, controller_ptr, _1, _2),
@@ -31,19 +37,10 @@ public:
 		return servant_ptr;
 	}
 
-	auto SearchKeyHash(const std::vector<std::string>& keyward_list) -> void {
-		typename Parser::Command command{};
-		command["command"] =  "search_key_hash";
-		command["hop_count"] = 0;
-		command["hash_list"] = typename Parser::Command(Json::arrayValue);
-		command["src_host"] = this->local_hostname;
-		command["src_port"] = this->port;
-		for(const auto keyward : keyward_list){
-			command["search_text_list"].append(keyward);
-		}
-		nr::Broadcast(this->service, this->connected_pool, this->parser.Combinate(command));
+	auto GetCorePtr() -> nr::P2pCore::Pointer {
+		return this->core_ptr;	
 	}
-
+	
 	auto ConnectToUpperNode(const std::string& hostname, int port) -> void
 	{
 		this->core_ptr->Connect(hostname, port, 
@@ -52,8 +49,24 @@ public:
 			boost::bind(&Servant::OnCloseUpperNodeSession, this->shared_from_this(), _1));
 	}
 
-	auto GetCorePtr() -> nr::P2pCore::Pointer {
-		return this->core_ptr;	
+	auto QuerySearchKeyHash(const std::vector<std::string>& keyward_list) -> void {	
+		typename Parser::Dict command{};
+		command["command"] =  "search_key_hash_query";
+		command["search_keyward_list"] = typename Parser::Dict(Json::arrayValue);
+		for(const auto keyward : keyward_list){
+			command["search_keyward_list"].append(keyward);
+		}
+			typename Parser::Dict route_dict;
+				typename Parser::Dict local_servant_info;
+				local_servant_info["address"] = this->local_hostname;
+				local_servant_info["port"] = this->port;
+			route_dict["route_servant"] = local_servant_info; 
+			
+			route_dict["searched_key_hash"] = 
+						typename Parser::Dict(Json::arrayValue); 
+		command["route"] = typename Parser::Dict(Json::arrayValue);
+		command["route"].append(route_dict);
+		this->at_random_selector(*connected_pool)->Send(this->parser.Combinate(command));
 	}
 
 private:
@@ -80,7 +93,7 @@ private:
 
 	auto OnReceiveFromUpperNode(
 			nr::Session::Pointer session, const utl::ByteArray& byte_array) -> void {
-		OnReceiveSearchKeyHash(session, byte_array);
+		OnReceiveSearchKeyHashQuery(session, byte_array);
 	}
 
 	auto OnCloseUpperNodeSession(nr::Session::Pointer session) -> void {
@@ -105,23 +118,75 @@ private:
 			this->parser.Parse(byte_array) << std::endl;
 	}
 
-	auto OnReceiveSearchKeyHash(
+	auto OnReceiveSearchKeyHashQuery(
 			nr::Session::Pointer session, const utl::ByteArray& byte_array) -> void {
 		auto command = this->parser.Parse(byte_array);
 		
 		this->os << "DEBUG(parsed byte_array):" << command << std::endl;
 
-		if(this->max_hop_count > command["hop_count"].asInt()){
-			command["hop_count"] = command["hop_count"].asInt() + 1;
-			nr::Broadcast(this->service, this->connected_pool, this->parser.Combinate(command));
+		assert(!this->connected_pool->IsEmpty());
+		
+		typename Parser::Dict route_dict;
+			typename Parser::Dict route_servant;
+			route_servant["address"] = this->local_hostname;
+			route_servant["port"] = this->port;
+		route_dict["route_servant"] = route_servant; 
+		
+		route_dict["searched_key_hash"] = 
+			typename Parser::Dict(Json::arrayValue); 
+		command["route"].append(route_dict);
+		
+		if(command["route"].size() <= this->max_hop_count){
+			this->at_random_selector(
+				*this->connected_pool)->Send(this->parser.Combinate(command));
 		}
 		else{
-			//to do
-			//core->Connect(command["src_host"], command["src_port"]);
-			
+			AnswerSearchKeyHash(command);
 		}
-
 	}
+	
+	auto AnswerSearchKeyHash(typename Parser::Dict command) -> void {
+		this->os << "DEBUG(parsed byte_array):" << command << std::endl;
+		if(command["command"] != "search_key_hash_answer"){
+			this->os << "return back query as answer." << std::endl;
+			command["command"] = "search_key_hash_answer";
+		}
+		
+		unsigned int self_index = 0;
+		for(unsigned int i = 0; i < command["route"].size(); i++){
+			if(this->local_hostname 
+					== command["route"][i]["route_servant"]["address"].asString()
+					&& this->port 
+					== command["route"][i]["route_servant"]["port"].asInt()){
+				self_index = i;
+				break;
+			}
+		}
+		
+		if(self_index == 0){
+			this->os << "query was answered!" << std::endl;	
+			this->os << command["route"] << std::endl;
+		}
+		else{
+			this->os << "send answer!" << std::endl;
+			nr::Send(this->service, this->core_ptr,
+				command["route"][self_index-1]["route_servant"]["address"].asString(), 
+				command["route"][self_index-1]["route_servant"]["port"].asInt(),
+				this->parser.Combinate(command));
+		}
+		
+	}
+
+	auto OnReceiveSearchKeyHashAnswer(
+			nr::Session::Pointer session, const utl::ByteArray& byte_array) -> void {
+		auto command = this->parser.Parse(byte_array);	
+		
+		this->os << "DEBUG(parsed byte_array):" << command << std::endl;
+		assert(!this->connected_pool->IsEmpty());
+
+		AnswerSearchKeyHash(command);
+	}
+
 
 	boost::asio::io_service& service;
 	std::string local_hostname;
@@ -132,7 +197,8 @@ private:
 	nr::P2pCore::Pointer core_ptr;
 	Parser parser;
 	std::ostream& os;
-	int max_hop_count;
+	unsigned int max_hop_count;
+	utl::RandomElementSelector at_random_selector;
 };
 }
 

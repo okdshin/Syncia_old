@@ -10,7 +10,6 @@ int main(int argc, char* argv[])
 			"{\"command\":\"check_version\", \"version\":\"0.1\"}");
 
 	auto json_parser = JsonParser("command");
-	std::cout << json_parser.PickupKey(json_str) << std::endl;
 	std::cout << json_parser.Parse(json_str) << std::endl;
 
     return 0;
