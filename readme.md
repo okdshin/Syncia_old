@@ -7,6 +7,7 @@ Required
 * cchace  
 * boost (version >= 1.50)  
 * gcc (version >= 4.7.1)  
+* jsoncpp  
 
 Running Sample
 ----------------
