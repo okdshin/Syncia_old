@@ -1,9 +1,9 @@
 CXX = ccache g++ -std=gnu++0x
-CXXFLAGS = -Wall -g -D SERVANT_UNIT_TEST
+CXXFLAGS = -Wall -g -D SEARCHKEYHASHABILITY_UNIT_TEST
 INCLUDES = 
 LIBS = -lboost_serialization -lboost_thread -ldl -lpthread -lboost_system -ljsoncpp -lcrypto
-OBJS = Servant.o
-PROGRAM = Servant.out
+OBJS = SearchKeyHashAbility.o
+PROGRAM = SearchKeyHashAbility.out
 
 all:$(PROGRAM)
 
