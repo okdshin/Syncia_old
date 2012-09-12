@@ -10,6 +10,7 @@
 
 namespace sy
 {
+
 template<class Parser>
 class SearchKeyHashAbility : public nr::ntw::Action, public nr::ntw::Behavior, 
 		public boost::enable_shared_from_this<SearchKeyHashAbility<Parser>> {
@@ -45,22 +46,11 @@ private:
 
 public:
 	auto QuerySearchKeyHash(const std::vector<std::string>& keyward_list) -> void {	
-		typename Parser::Dict command{};
-		command["command"] =  "search_key_hash_query";
-		command["search_keyward_list"] = typename Parser::Dict(Json::arrayValue);
-		for(const auto keyward : keyward_list){
-			command["search_keyward_list"].append(keyward);
-		}
-			typename Parser::Dict route_dict;
-				typename Parser::Dict local_peer_info;
-				local_peer_info["node_id"] = this->node_id;
-			route_dict["route_peer"] = local_peer_info; 
-			
-			route_dict["searched_key_hash"] = 
-						typename Parser::Dict(Json::arrayValue); 
-		command["route"] = typename Parser::Dict(Json::arrayValue);
-		command["route"].append(route_dict);
-		this->at_random_selector(*connected_pool)->Send(this->parser.Combinate(command));
+		auto route = Route();
+		route.Add(this->node_id, std::vector<std::string>());
+
+		this->at_random_selector(*connected_pool)->Send(Combinate(
+			SearchKeyHashQueryCommand(keyward_list, route)));
 	}
 
 private:
@@ -87,24 +77,10 @@ private:
 	
 	auto OnReceiveSearchKeyHashQuery(
 			nr::ntw::Session::Pointer session, const nr::ByteArray& byte_array) -> void {
-		auto command = this->parser.Parse(byte_array);
-		
-		this->os << "DEBUG(parsed byte_array):" << command << std::endl;
-
-		assert(!this->connected_pool->IsEmpty());
-		
-		typename Parser::Dict route_dict;
-			typename Parser::Dict route_peer;
-			route_peer["node_id"] = this->node_id;
-		route_dict["route_peer"] = route_peer; 
-		
-		route_dict["searched_key_hash"] = 
-			typename Parser::Dict(Json::arrayValue); 
-		command["route"].append(route_dict);
-		
-		if(command["route"].size() <= this->max_hop_count){
-			this->at_random_selector(
-				*this->connected_pool)->Send(this->parser.Combinate(command));
+		auto command = SearchKeyHashQueryCommand(byte_array);
+		command.AddRoute(this->node_id, std::vector<std::string()>()); // to do
+		if(command.GetHopCount() <= this->max_hop_count){
+			this->at_random_selector(*this->connected_pool)->Send(Combinate(command));
 		}
 		else{
 			AnswerSearchKeyHash(command);
