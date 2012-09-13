@@ -1,0 +1,7 @@
+*.log
+*core*
+*.o
+*.out
+*.txt
+*.dat
+*neuria*
