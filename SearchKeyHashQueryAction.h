@@ -38,7 +38,9 @@ public:
 		command.AddFindKeyHash(nr::db::CreateTestKeyHash());
 		command.AddRouteNodeId(this->node_id);
 
-		this->at_random_selector(*connected_pool)->Send(command.Serialize());
+		this->at_random_selector(*connected_pool)->Send(nr::ntw::DispatchCommand(
+			cmd::GetCommandId<cmd::SearchKeyHashQueryCommand>(), 
+			command.Serialize()).Serialize());
 	}
 
 private:

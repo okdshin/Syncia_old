@@ -5,6 +5,25 @@
 
 using namespace sy;
 
+void TestCui(Syncia::Pointer peer){
+	auto shell = nr::utl::Shell(std::cout);
+	nr::utl::RegisterExitFunc(shell);
+	shell.Register("link", "create new search link.", 
+		[peer](const nr::utl::Shell::ArgumentList& argument_list){
+			std::cout << "call searchlink." << std::endl;
+			peer->ConnectSearchLink(
+				nr::utl::CreateSocketNodeId(argument_list.at(1), 
+					boost::lexical_cast<int>(argument_list.at(2))));
+		});
+	shell.Register("search", "query search key hash.", 
+		[peer](const nr::utl::Shell::ArgumentList& argument_list){
+			std::cout << "call querysearch" << std::endl;
+			peer->QuerySearchKeyHash(argument_list);
+		});
+	shell.Start();
+	
+}
+
 void TestCuiApp(int argc, char* argv[]){
 	boost::asio::io_service service;
 	boost::asio::io_service::work w(service);
@@ -28,27 +47,14 @@ void TestCuiApp(int argc, char* argv[]){
 		buffer_size, max_hop_count, std::cout);
 	
 	peer->Bind(dispatcher);
-	
+	std::cout << "dispatcher:" << dispatcher << std::endl;
+
 	auto client = nr::ntw::SocketClient::Create(service, buffer_size, std::cout);
 	peer->Bind(client);
-
-	auto shell = nr::utl::Shell(std::cout);
-	nr::utl::RegisterExitFunc(shell);
-	shell.Register("link", "create new search link.", 
-		[peer](const nr::utl::Shell::ArgumentList& argument_list){
-			std::cout << "call searchlink." << std::endl;
-			peer->ConnectSearchLink(
-				nr::utl::CreateSocketNodeId(argument_list.at(1), 
-					boost::lexical_cast<int>(argument_list.at(2))));
-		});
-	shell.Register("search", "query search key hash.", 
-		[peer](const nr::utl::Shell::ArgumentList& argument_list){
-			std::cout << "call querysearch" << std::endl;
-			peer->QuerySearchKeyHash(argument_list);
-		});
-	
 	server->StartAccept();
-	shell.Start();
+	
+	TestCui(peer);
+
 	t.join();
 }
 
