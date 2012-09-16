@@ -52,13 +52,13 @@ public:
 
 	auto GetData() const -> SearchKeyHashCommandData { return data; }
 
+
 	auto Serialize() const -> nr::ByteArray {
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
 		oa << static_cast<const SearchKeyHashQueryCommand&>(*this);
 		return nr::utl::String2ByteArray(ss.str());
 	}
-
 private:
 	friend class boost::serialization::access;
 	template<class Archive>

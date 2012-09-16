@@ -1,9 +1,9 @@
 CXX = g++ -std=gnu++0x
-CXXFLAGS = -Wall -g -D SYNCIA_UNIT_TEST
+CXXFLAGS = -Wall -g -D REQUESTFILEQUERYACTION_UNIT_TEST
 INCLUDES = 
-LIBS = -lboost_serialization -lboost_thread -ldl -lpthread -lboost_system -ljsoncpp -lcrypto -lboost_filesystem
-OBJS = Syncia.o
-PROGRAM = Syncia.out
+LIBS =
+OBJS = RequestFileQueryAction.o
+PROGRAM = RequestFileQueryAction.out
 
 all:$(PROGRAM)
 
