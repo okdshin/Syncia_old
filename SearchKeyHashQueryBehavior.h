@@ -28,6 +28,7 @@ public:
 		dispatcher->RegisterFunc(cmd::GetCommandId<cmd::SearchKeyHashQueryCommand>(),
 			boost::bind(&SearchKeyHashQueryBehavior::OnReceiveSearchKeyHashQuery, 
 				this->shared_from_this(), _1, _2));
+		this->os << "dispatcher:" << dispatcher << std::endl;
 	}
 
 	auto SetSearchKeyHashAnswerer(Answerer answerer) -> void {
