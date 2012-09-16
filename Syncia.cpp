@@ -6,27 +6,18 @@
 
 using namespace sy;
 
-<<<<<<< HEAD
 auto TestCui(Syncia::Pointer peer) -> void {
-=======
-void TestCui(Syncia::Pointer peer){
->>>>>>> bf31882e133c9ae1b02f25b8e2a2687cce5fe4c0
 	auto shell = nr::utl::Shell(std::cout);
 	nr::utl::RegisterExitFunc(shell);
 	shell.Register("link", "create new search link.", 
 		[peer](const nr::utl::Shell::ArgumentList& argument_list){
-<<<<<<< HEAD
 			std::cout << "call: create search link." << std::endl;
-=======
-			std::cout << "call searchlink." << std::endl;
->>>>>>> bf31882e133c9ae1b02f25b8e2a2687cce5fe4c0
 			peer->ConnectSearchLink(
 				nr::utl::CreateSocketNodeId(argument_list.at(1), 
 					boost::lexical_cast<int>(argument_list.at(2))));
 		});
 	shell.Register("search", "query search key hash.", 
 		[peer](const nr::utl::Shell::ArgumentList& argument_list){
-<<<<<<< HEAD
 			std::cout << "call: search key hash" << std::endl;
 			peer->QuerySearchKeyHash(nr::utl::Shell::ArgumentList(
 				argument_list.begin()+1, argument_list.end()));
@@ -57,39 +48,23 @@ void TestCui(Syncia::Pointer peer){
 				keyward = nr::db::FileKeyHash::Keyward(argument_list.at(2));
 			}
 			peer->UploadFile(keyward, file_path);
-=======
 			std::cout << "call querysearch" << std::endl;
-			peer->QuerySearchKeyHash(argument_list);
->>>>>>> bf31882e133c9ae1b02f25b8e2a2687cce5fe4c0
 		});
 	shell.Start();
 	
 }
 
-<<<<<<< HEAD
 auto CreatePeer(boost::asio::io_service& service, 
 		const std::string& hostname, int local_port) -> Syncia::Pointer {
 	const int buffer_size = 128;
-=======
-void TestCuiApp(int argc, char* argv[]){
-	boost::asio::io_service service;
 	boost::asio::io_service::work w(service);
 	boost::thread t(boost::bind(&boost::asio::io_service::run, &service));
 
-	const int buffer_size = 128;
-	
-	int local_port = 54321;
-	if(argc == 2)
-	{
-		local_port = boost::lexical_cast<int>(argv[1]);
-	}
->>>>>>> bf31882e133c9ae1b02f25b8e2a2687cce5fe4c0
 	auto server = nr::ntw::SocketServer::Create(
 		service, local_port, buffer_size, std::cout);
 	auto dispatcher = nr::ntw::BehaviorDispatcher::Create(std::cout);
 	dispatcher->Bind(server);
 	
-<<<<<<< HEAD
 	int max_hop_count = 6;
 	auto node_id = nr::utl::CreateSocketNodeId(hostname, local_port); 
 	std::cout << node_id << std::endl;
@@ -98,20 +73,10 @@ void TestCuiApp(int argc, char* argv[]){
 		buffer_size, max_hop_count, "./", 0.3, std::cout);
 	
 	peer->Bind(dispatcher);
-=======
-	int max_hop_count = 3;
-	auto peer = Syncia::Create(service, 
-		nr::utl::CreateSocketNodeId("127.0.0.1", local_port), 
-		buffer_size, max_hop_count, std::cout);
-	
-	peer->Bind(dispatcher);
-	std::cout << "dispatcher:" << dispatcher << std::endl;
->>>>>>> bf31882e133c9ae1b02f25b8e2a2687cce5fe4c0
 
 	auto client = nr::ntw::SocketClient::Create(service, buffer_size, std::cout);
 	peer->Bind(client);
 	server->StartAccept();
-<<<<<<< HEAD
 
 	return peer;
 }	
@@ -137,10 +102,6 @@ void TestManyPeer(int peer_num){
 	}
 
 	TestCui(peer_list.front());
-=======
-	
-	TestCui(peer);
->>>>>>> bf31882e133c9ae1b02f25b8e2a2687cce5fe4c0
 
 	t.join();
 }
