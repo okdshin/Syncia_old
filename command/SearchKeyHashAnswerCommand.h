@@ -9,7 +9,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include "../neuria/Neuria.h"
-#include "../neuria/database/KeyHash.h"
+#include "../neuria/database/DataBase.h"
 #include "Common.h"
 #include "SearchKeyHashCommandData.h"
 #include "SearchKeyHashQueryCommand.h"
@@ -33,7 +33,7 @@ public:
 		return command;
 	}
 
-	auto GetFindKeyHashList() const -> std::vector<nr::db::KeyHash> {
+	auto GetFindKeyHashList() const -> nr::db::FileKeyHashDb::FileKeyHashList {
 		return data.GetFindKeyHashListRef();	
 	}
 

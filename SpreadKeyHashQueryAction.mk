@@ -1,9 +1,9 @@
 CXX = g++ -std=gnu++0x
-CXXFLAGS = -Wall -g -D SYNCIA_UNIT_TEST
+CXXFLAGS = -Wall -g -D SPREADKEYHASHQUERYACTION_UNIT_TEST
 INCLUDES = 
-LIBS = -lboost_date_time -lboost_serialization -lboost_thread -ldl -lpthread -lboost_system -ljsoncpp -lcrypto -lboost_filesystem
-OBJS = Syncia.o
-PROGRAM = Syncia.out
+LIBS = -lboost_serialization -lboost_thread -ldl -lpthread -lboost_system -ljsoncpp -lcrypto
+OBJS = SpreadKeyHashQueryAction.o
+PROGRAM = SpreadKeyHashQueryAction.out
 
 all:$(PROGRAM)
 

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cassert>
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 #include "neuria/Neuria.h"
 #include "command/Command.h"
 
@@ -18,10 +18,10 @@ public:
 
 	static auto Create(boost::asio::io_service& service, const nr::NodeId& node_id, 
 			int max_hop_count, nr::ntw::SessionPool::Pointer connected_pool, 
-			std::ostream& os) -> Pointer {
+			nr::db::FileKeyHashDb::Pointer file_db, std::ostream& os) -> Pointer {
 		return Pointer(
 			new SearchKeyHashQueryBehavior(
-				service, node_id, max_hop_count, connected_pool, os));
+				service, node_id, max_hop_count, connected_pool, file_db, os));
 	}
 	
 	auto Bind(nr::ntw::BehaviorDispatcher::Pointer dispatcher) -> void {
@@ -38,15 +38,17 @@ public:
 private:
 	SearchKeyHashQueryBehavior(boost::asio::io_service& service, 
 		const nr::NodeId& node_id, int max_hop_count, 
-		nr::ntw::SessionPool::Pointer connected_pool, std::ostream& os) 
+		nr::ntw::SessionPool::Pointer connected_pool, 
+		nr::db::FileKeyHashDb::Pointer file_db, std::ostream& os) 
 		: service(service), node_id(node_id), max_hop_count(max_hop_count),
-		connected_pool(connected_pool), os(os){}
+		connected_pool(connected_pool), file_db(file_db), os(os){}
 	
 	auto OnReceiveSearchKeyHashQuery(nr::ntw::Session::Pointer session, 
 			const nr::ByteArray& byte_array) -> void {
 		this->os << "on receive search key hash query." << std::endl;
 		auto command = cmd::SearchKeyHashQueryCommand::Parse(byte_array);
-		command.AddFindKeyHash(nr::db::CreateTestKeyHash());//to do
+		command.AddFindKeyHashList(
+			this->file_db->Search(command.GetSearchKeywardList()));
 		command.AddRouteNodeId(this->node_id);
 		if(command.GetHopCount() <= this->max_hop_count){
 			this->os << "resend query." << std::endl;
@@ -57,7 +59,7 @@ private:
 					command.Serialize()).Serialize());
 		}
 		else{
-			this->os << "return back query as answer." << std::endl;//to do
+			this->os << "return back query as answer." << std::endl;
 			this->answerer(command);
 		}
 	}
@@ -66,6 +68,7 @@ private:
 	nr::NodeId node_id;
 	int max_hop_count;
 	nr::ntw::SessionPool::Pointer connected_pool;
+	nr::db::FileKeyHashDb::Pointer file_db;
 	std::ostream& os;
 	nr::utl::RandomElementSelector at_random_selector;
 	Answerer answerer;

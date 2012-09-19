@@ -10,7 +10,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include "../neuria/Neuria.h"
-#include "../neuria/database/KeyHash.h"
+#include "../neuria/database/DataBase.h"
 #include "Common.h"
 #include "SearchKeyHashCommandData.h"
 
@@ -22,7 +22,8 @@ using StrList = std::vector<std::string>;
 class SearchKeyHashQueryCommand {
 public:
 	SearchKeyHashQueryCommand(){}
-	SearchKeyHashQueryCommand(const StrList& search_keyward_list)
+	SearchKeyHashQueryCommand(
+			const nr::db::FileKeyHashDb::KeywardList& search_keyward_list)
 		: data(search_keyward_list){}
 
 	static auto Parse(const nr::ByteArray& byte_array) -> SearchKeyHashQueryCommand {
@@ -33,15 +34,17 @@ public:
 		return command;
 	}
 	
-	auto GetSearchKeywardList() const -> StrList { 
+	auto GetSearchKeywardList() const -> nr::db::FileKeyHashDb::KeywardList { 
 		return this->data.GetSearchKeywardListRef(); }
 
-	auto GetFindKeyHashList() const -> std::vector<nr::db::KeyHash> {
+	auto GetFindKeyHashList() const -> std::vector<nr::db::FileKeyHash> {
 		return data.GetFindKeyHashListRef();	
 	}
 
-	auto AddFindKeyHash(const nr::db::KeyHash& find_key_hash) -> void {
-		this->data.GetFindKeyHashListRef().push_back(find_key_hash); 
+	auto AddFindKeyHashList(
+			const nr::db::FileKeyHashDb::FileKeyHashList& find_key_hash_list) -> void {
+		std::copy(find_key_hash_list.begin(), find_key_hash_list.end(), 
+			std::back_inserter(this->data.GetFindKeyHashListRef()));
 	}
 
 	auto AddRouteNodeId(const nr::NodeId& node_id) -> void {

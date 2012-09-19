@@ -1,5 +1,5 @@
 #pragma once
-//SearchKeyHashQueryAction:20120827
+//SpreadKeyHashQueryAction:20120827
 #include <iostream>
 #include <algorithm>
 #include <cassert>
@@ -10,42 +10,42 @@
 namespace sy
 {
 
-class SearchKeyHashQueryAction : 
-		public boost::enable_shared_from_this<SearchKeyHashQueryAction> {
+class SpreadKeyHashQueryAction : 
+		public boost::enable_shared_from_this<SpreadKeyHashQueryAction> {
 public:
-	using Pointer = boost::shared_ptr<SearchKeyHashQueryAction>;
+	using Pointer = boost::shared_ptr<SpreadKeyHashQueryAction>;
 
 	static auto Create(boost::asio::io_service& service, const nr::NodeId& node_id, 
 			int buffer_size, nr::ntw::SessionPool::Pointer connected_pool, 
 			std::ostream& os) -> Pointer {
 		return Pointer(
-			new SearchKeyHashQueryAction(service, node_id, connected_pool, os));
+			new SpreadKeyHashQueryAction(service, node_id, connected_pool, os));
 	}
 	
 	auto Bind(nr::ntw::Client::Pointer client) -> void {
 		this->client = client;
 	}
 
-	auto ConnectSearchLink(const nr::NodeId& node_id) -> void {
+	auto ConnectSpreadLink(const nr::NodeId& node_id) -> void {
 		nr::ntw::Connect(this->client, node_id, this->connected_pool,
 			[this](nr::ntw::Session::Pointer, const nr::ByteArray&){
 				this->os << "on receive from connected node." << std::endl;
 			});
 	}
 
-	auto QuerySearchKeyHash(
+	auto QuerySpreadKeyHash(
 			const nr::db::FileKeyHashDb::KeywardList& keyward_list) -> void {	
-		auto command = cmd::SearchKeyHashQueryCommand(keyward_list);
+		auto command = cmd::SpreadKeyHashQueryCommand(keyward_list);
 		//command.AddFindKeyHashList(nr::db::CreateTestKeyHash());
 		command.AddRouteNodeId(this->node_id);
 
 		this->at_random_selector(*connected_pool)->Send(nr::ntw::DispatchCommand(
-			cmd::GetCommandId<cmd::SearchKeyHashQueryCommand>(), 
+			cmd::GetCommandId<cmd::SpreadKeyHashQueryCommand>(), 
 			command.Serialize()).Serialize());
 	}
 
 private:
-	SearchKeyHashQueryAction(boost::asio::io_service& service, 
+	SpreadKeyHashQueryAction(boost::asio::io_service& service, 
 		const nr::NodeId& node_id, nr::ntw::SessionPool::Pointer connected_pool, 
 		std::ostream& os) 
 		: service(service), node_id(node_id), connected_pool(connected_pool), os(os){}

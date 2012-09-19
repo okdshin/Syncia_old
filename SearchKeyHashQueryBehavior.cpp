@@ -24,9 +24,12 @@ int main(int argc, char* argv[])
 	dispatcher->Bind(server);
 
 	auto connected_pool = nr::ntw::SessionPool::Create();
+
+	auto file_db = nr::db::FileKeyHashDb::Create(0.3, buffer_size, std::cout);
+
 	auto peer = SearchKeyHashQueryBehavior::Create(service, 
 		nr::utl::CreateSocketNodeId("127.0.0.1", local_port), 
-		max_hop_count, connected_pool, std::cout);
+		max_hop_count, connected_pool, file_db, std::cout);
 	peer->Bind(dispatcher);
 
 	server->StartAccept();

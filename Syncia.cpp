@@ -9,20 +9,26 @@ using namespace sy;
 auto TestCui(Syncia::Pointer peer) -> void {
 	auto shell = nr::utl::Shell(std::cout);
 	nr::utl::RegisterExitFunc(shell);
-	shell.Register("link", "create new search link.", 
+	shell.Register("link", "<hostname> <port> : create new search link.", 
 		[peer](const nr::utl::Shell::ArgumentList& argument_list){
 			std::cout << "call: create search link." << std::endl;
 			peer->ConnectSearchLink(
 				nr::utl::CreateSocketNodeId(argument_list.at(1), 
 					boost::lexical_cast<int>(argument_list.at(2))));
 		});
-	shell.Register("search", "query search key hash.", 
+	shell.Register("search", "[<keyward> ...] : query search key hash.", 
 		[peer](const nr::utl::Shell::ArgumentList& argument_list){
 			std::cout << "call: search key hash" << std::endl;
-			peer->QuerySearchKeyHash(nr::utl::Shell::ArgumentList(
-				argument_list.begin()+1, argument_list.end()));
+			
+			auto search_keyward_list = nr::db::FileKeyHashDb::KeywardList();
+			for(auto i = argument_list.begin()+1; i != argument_list.end(); i++){
+				search_keyward_list.push_back(
+					nr::db::FileKeyHash::Keyward(*i)); 
+			}
+			peer->QuerySearchKeyHash(search_keyward_list);
+			
 		});
-	shell.Register("request", "request file.", 
+	shell.Register("request", "<hashid> <hostname> <port> : request file.", 
 		[peer](const nr::utl::Shell::ArgumentList& argument_list){
 			std::cout << "call: request file" << std::endl;
 			peer->RequestFile(
@@ -31,12 +37,12 @@ auto TestCui(Syncia::Pointer peer) -> void {
 					boost::lexical_cast<int>(argument_list.at(3)))
 			);
 		});
-	shell.Register("upls", "list up uploaded files.", 
+	shell.Register("lsup", ": list up uploaded or searched file ids.", 
 		[peer](const nr::utl::Shell::ArgumentList& argument_list){
 			std::cout << "call: upls" << std::endl;
 			std::cout << peer->GetFileKeyHashDb() << std::endl;
 		});
-	shell.Register("upload", "upload file.", 
+	shell.Register("upload", "<filepath> (<keyward>): upload file.", 
 		[peer](const nr::utl::Shell::ArgumentList& argument_list){
 			std::cout << "call: upload" << std::endl;
 			auto file_path = boost::filesystem::path(argument_list.at(1));
@@ -48,7 +54,11 @@ auto TestCui(Syncia::Pointer peer) -> void {
 				keyward = nr::db::FileKeyHash::Keyward(argument_list.at(2));
 			}
 			peer->UploadFile(keyward, file_path);
-			std::cout << "call querysearch" << std::endl;
+		});
+	shell.Register("uploaddir", ": upload directory.", 
+		[peer](const nr::utl::Shell::ArgumentList& argument_list){
+			std::cout << "call: upload directory" << std::endl;
+			peer->UploadDirectory();
 		});
 	shell.Start();
 	
@@ -62,7 +72,7 @@ auto CreatePeer(boost::asio::io_service& service,
 
 	auto server = nr::ntw::SocketServer::Create(
 		service, local_port, buffer_size, std::cout);
-	auto dispatcher = nr::ntw::BehaviorDispatcher::Create(std::cout);
+	auto dispatcher = nr::ntw::BehaviorDispatcher::Create(service, std::cout);
 	dispatcher->Bind(server);
 	
 	int max_hop_count = 6;
@@ -70,7 +80,7 @@ auto CreatePeer(boost::asio::io_service& service,
 	std::cout << node_id << std::endl;
 	auto os = nr::utl::LabeledSink(node_id, std::cout);
 	auto peer = Syncia::Create(service, node_id,
-		buffer_size, max_hop_count, "./", 0.3, std::cout);
+		buffer_size, max_hop_count, "./upload/", "./download/", 0.3, std::cout);
 	
 	peer->Bind(dispatcher);
 
@@ -99,6 +109,11 @@ void TestManyPeer(int peer_num){
 				nr::utl::CreateSocketNodeId(
 					hostname, base_port_num+nr::utl::Random(0, peer_num-1)));
 		}
+	}
+	
+	for(int i = 0; i < peer_num; i++){
+		peer_list.at(i)->UploadFile(nr::db::FileKeyHash::Keyward("hello.txt"),
+			boost::filesystem::path("./upload/hello.txt"));
 	}
 
 	TestCui(peer_list.front());

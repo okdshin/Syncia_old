@@ -39,6 +39,7 @@ private:
 		auto file_byte_array = nr::db::SerializeFile(file_path, this->buffer_size);
 		session->Send(cmd::RequestFileAnswerCommand(
 			file_path, file_byte_array).Serialize());
+		//session->Close();
 	}
 
 	int buffer_size;

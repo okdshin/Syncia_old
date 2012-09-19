@@ -28,9 +28,10 @@ void TestSerialize(const Type& target)
 int main(int argc, char* argv[])
 {
 	auto command = SearchKeyHashQueryCommand({"hello", "world"});
-	command.AddFindKeyHash(nr::db::KeyHash(
-		nr::db::KeyHash::HashId("hash_id"), nr::db::KeyHash::Keyward("keyward"), 
-		nr::NodeId("owner_id")));
+	command.AddFindKeyHashList({nr::db::FileKeyHash(
+		nr::db::FileKeyHash::HashId("hash_id"), 
+		nr::db::FileKeyHash::Keyward("keyward"), 
+		nr::NodeId("owner_id"), boost::filesystem::path("./"))});
 	command.AddRouteNodeId("owner_id");
 	//TestSerialize(command);
 	auto byte_array = command.Serialize();

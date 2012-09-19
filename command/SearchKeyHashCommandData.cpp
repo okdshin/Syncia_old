@@ -27,9 +27,9 @@ void TestSerialize(const Type& target)
 
 int main(int argc, char* argv[])
 {
-	auto command = SearchKeyHashCommandData(StrList{"hello", "world"});
-	std::cout << command << std::endl;
-	TestSerialize(command);
+	//auto command = SearchKeyHashCommandData(StrList{"hello", "world"});
+	//std::cout << command << std::endl;
+	//TestSerialize(command);
 	//auto byte_array = command.Serialize();
 	//std::cout << SearchKeyHashCommandData::Parse(byte_array) << std::endl;
 

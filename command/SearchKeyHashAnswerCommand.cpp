@@ -27,10 +27,10 @@ void TestSerialize(const Type& target)
 
 int main(int argc, char* argv[])
 {
-	auto command = SearchKeyHashAnswerCommand(SearchKeyHashCommandData({"hello", "world"}));
+	//auto command = SearchKeyHashAnswerCommand(SearchKeyHashCommandData({"hello", "world"}));
 	//TestSerialize(command);
-	auto byte_array = command.Serialize();
-	std::cout << SearchKeyHashAnswerCommand::Parse(byte_array) << std::endl;
+	//auto byte_array = command.Serialize();
+	//std::cout << SearchKeyHashAnswerCommand::Parse(byte_array) << std::endl;
 
     return 0;
 }

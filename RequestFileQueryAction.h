@@ -47,6 +47,7 @@ public:
 					command.GetFileByteArray());
 				this->os << "replied file!: " 
 					<< command.GetFilePath().filename() << std::endl;
+				//session->Close();
 			});
 	}
 

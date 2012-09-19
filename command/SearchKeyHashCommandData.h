@@ -9,7 +9,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include "../neuria/Neuria.h"
-#include "../neuria/database/KeyHash.h"
+#include "../neuria/database/DataBase.h"
 #include "Common.h"
 
 namespace sy{
@@ -20,7 +20,8 @@ using StrList = std::vector<std::string>;
 class SearchKeyHashCommandData {
 public:
 	SearchKeyHashCommandData(){}
-	SearchKeyHashCommandData(const StrList& search_keyward_list)
+	SearchKeyHashCommandData(
+			const nr::db::FileKeyHashDb::KeywardList& search_keyward_list)
 		:search_keyward_list(search_keyward_list){}
 
 	static auto Parse(const nr::ByteArray& byte_array) -> SearchKeyHashCommandData {
@@ -31,11 +32,11 @@ public:
 		return command;
 	}
 
-	auto GetSearchKeywardListRef() -> StrList& {
+	auto GetSearchKeywardListRef() -> nr::db::FileKeyHashDb::KeywardList& {
 		return search_keyward_list;	
 	}
 
-	auto GetFindKeyHashListRef() -> std::vector<nr::db::KeyHash>& {
+	auto GetFindKeyHashListRef() -> std::vector<nr::db::FileKeyHash>& {
 		return find_key_hash_list;	
 	}
 
@@ -43,11 +44,12 @@ public:
 		return route_node_id_list;
 	}
 
-	auto GetSearchKeywardListRef() const -> const StrList& {
+	auto GetSearchKeywardListRef() const 
+			-> const nr::db::FileKeyHashDb::KeywardList& {
 		return search_keyward_list;	
 	}
 
-	auto GetFindKeyHashListRef() const -> const std::vector<nr::db::KeyHash>& {
+	auto GetFindKeyHashListRef() const -> const std::vector<nr::db::FileKeyHash>& {
 		return find_key_hash_list;	
 	}
 
@@ -69,8 +71,8 @@ private:
 		ar & search_keyward_list & find_key_hash_list & route_node_id_list;
 	}
 	
-	StrList search_keyward_list;
-	std::vector<nr::db::KeyHash> find_key_hash_list;
+	nr::db::FileKeyHashDb::KeywardList search_keyward_list;
+	std::vector<nr::db::FileKeyHash> find_key_hash_list;
 	std::vector<nr::NodeId> route_node_id_list;
 };
 
@@ -78,11 +80,11 @@ auto operator<<(std::ostream& os,
 		const SearchKeyHashCommandData& command) -> std::ostream& {
 	auto keyward_list = command.GetSearchKeywardListRef();
 	std::copy(keyward_list.begin(), keyward_list.end(), 
-		std::ostream_iterator<std::string>(os, ", "));
+		std::ostream_iterator<nr::db::FileKeyHash::Keyward>(os, ", "));
 	os << "\n";
 	auto find_key_hash_list = command.GetFindKeyHashListRef();
 	std::copy(find_key_hash_list.begin(), find_key_hash_list.end(), 
-		std::ostream_iterator<nr::db::KeyHash>(os, ", "));
+		std::ostream_iterator<nr::db::FileKeyHash>(os, ", "));
 	os << "\n";
 	auto route_node_id_list = command.GetRouteNodeIdListRef();
 	std::copy(route_node_id_list.begin(), route_node_id_list.end(), 
