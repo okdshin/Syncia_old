@@ -24,18 +24,12 @@ void TestCuiApp(int argc, char* argv[]){
 	nr::utl::RegisterExitFunc(shell);
 	shell.Register("link", "create new link.", 
 		[link_action](const nr::utl::Shell::ArgumentList& argument_list){
-			link_action->ConnectFetchLink(
+			link_action->CreateLink(
 				nr::utl::CreateSocketNodeId(
 					argument_list.at(1), 
 					boost::lexical_cast<int>(argument_list.at(2))),
 				nr::ntw::DispatchCommand::CommandId("test link query command"),
 				nr::utl::String2ByteArray("link please!! 12345"));
-		});
-	shell.Register("query", "query to linked node at random.",
-		[link_action](const nr::utl::Shell::ArgumentList& argument_list){
-			link_action->QueryRequestAtRandom(
-				nr::ntw::DispatchCommand::CommandId("test fetch query"),
-				nr::utl::String2ByteArray("fetch! fetch!! fetch!!!"));
 		});
 	shell.Start();
 	t.join();
