@@ -18,5 +18,8 @@ class ConnectedPoolType{};
 using ConnectedPool = nr::utl::TypeWrapper<nr::ntw::SessionPool::Pointer, 
 	ConnectedPoolType>;
 
+class IsAnswerType{};
+using IsAnswer = nr::utl::TypeWrapper<bool, IsAnswerType>;
+
 }
 
