@@ -1,13 +1,19 @@
 #pragma once
 //Common:20120913
 #include <iostream>
+#include "DispatchCommand.h"
 
 namespace sy{
 namespace cmd{
 
 template<class Command>
-auto GetCommandId() -> nr::ntw::DispatchCommand::CommandId {
-	return nr::ntw::DispatchCommand::CommandId("not registered function");	
+auto GetCommandId() -> DispatchCommand::CommandId {
+	return DispatchCommand::CommandId("not registered function");	
+}
+
+template<class Command>
+auto WrapWithDispatchCommand(const Command& command) -> DispatchCommand {
+	return DispatchCommand(GetCommandId<Command>(), command.Serialize());
 }
 
 }

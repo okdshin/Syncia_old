@@ -60,8 +60,8 @@ auto operator<<(std::ostream& os,
 
 template<>
 auto GetCommandId<RequestFileAnswerCommand>() 
-		-> nr::ntw::DispatchCommand::CommandId {
-	return nr::ntw::DispatchCommand::CommandId("request_file_answer");
+		-> DispatchCommand::CommandId {
+	return DispatchCommand::CommandId("request_file_answer");
 }
 
 }

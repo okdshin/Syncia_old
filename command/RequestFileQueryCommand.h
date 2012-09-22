@@ -50,8 +50,8 @@ auto operator<<(std::ostream& os,
 
 template<>
 auto GetCommandId<RequestFileQueryCommand>() 
-		-> nr::ntw::DispatchCommand::CommandId {
-	return nr::ntw::DispatchCommand::CommandId("request_file_query");
+		-> DispatchCommand::CommandId {
+	return DispatchCommand::CommandId("request_file_query");
 }
 
 }

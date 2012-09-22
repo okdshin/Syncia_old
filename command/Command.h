@@ -4,6 +4,7 @@
 #include "SearchKeyHashAnswerCommand.h"
 #include "RequestFileQueryCommand.h"
 #include "RequestFileAnswerCommand.h"
+#include "FetchCommand.h"
 
 namespace sy{
 namespace cmd{

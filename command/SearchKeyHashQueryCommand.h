@@ -80,8 +80,8 @@ auto operator<<(std::ostream& os,
 
 template<>
 auto GetCommandId<SearchKeyHashQueryCommand>() 
-		-> nr::ntw::DispatchCommand::CommandId {
-	return nr::ntw::DispatchCommand::CommandId("search_key_hash_query");
+		-> DispatchCommand::CommandId {
+	return DispatchCommand::CommandId("search_key_hash_query");
 }
 
 }
