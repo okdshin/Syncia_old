@@ -24,46 +24,37 @@ class RequestFileAction :
 public:
 	using Pointer = boost::shared_ptr<RequestFileAction>;
 
-	static auto Create(const boost::filesystem::path& download_directory_path, 
-			std::ostream& os) -> Pointer {
-		return Pointer(new RequestFileAction(download_directory_path, os));
+	static auto Create(std::ostream& os) -> Pointer {
+		return Pointer(new RequestFileAction(os));
 	}
 
 	auto Bind(nr::ntw::Client::Pointer client) -> void {
 		this->client = client;	
 	}
 
-	auto RequestFile(const nr::db::HashId& hash_id, 
-			const nr::NodeId& node_id) -> void {
+	auto RequestFile(const nr::db::HashId& hash_id, const nr::NodeId& node_id, 
+			const boost::filesystem::path& download_directory_path) -> void {
 		Communicate(this->client, node_id,
 			cmd::DispatchCommand(
 				cmd::GetCommandId<cmd::RequestFileQueryCommand>(),
 				cmd::RequestFileQueryCommand(hash_id).Serialize()
 			).Serialize(),
-			[this](nr::ntw::Session::Pointer session, 
+			[this, download_directory_path](nr::ntw::Session::Pointer session, 
 					const nr::ByteArray& byte_array){
 				auto command = cmd::RequestFileAnswerCommand::Parse(byte_array);
-				ParseFile(this->download_directory_path, command.GetFilePath(), 
+				ParseFile(download_directory_path, command.GetFilePath(), 
 					command.GetFileByteArray());
 				this->os << "replied file!: " 
 					<< command.GetFilePath().filename() << std::endl;
 			},
-			[](nr::ntw::Session::Pointer session){
-				session->Close();
-			});
+			[](nr::ntw::Session::Pointer){});
 	}
 
-	auto SetDownloadDirectoryPath(const std::string& download_directory_path) -> void {
-		this->download_directory_path = download_directory_path;	
-	}
 
 private:
-    RequestFileAction(
-			const boost::filesystem::path& download_directory_path, std::ostream& os)
-		: download_directory_path(download_directory_path), os(os){}
+    RequestFileAction(std::ostream& os) : os(os){}
 
 	nr::ntw::Client::Pointer client;
-	boost::filesystem::path download_directory_path;
 	std::ostream& os;
 };
 

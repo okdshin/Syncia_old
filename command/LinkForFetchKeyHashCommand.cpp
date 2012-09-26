@@ -1,5 +1,5 @@
-#ifdef SEARCHKEYHASHLINKCOMMAND_UNIT_TEST
-#include "SearchKeyHashLinkCommand.h"
+#ifdef LINKFORFETCHKEYHASHCOMMAND_UNIT_TEST
+#include "LinkForFetchKeyHashCommand.h"
 #include <iostream>
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
@@ -27,9 +27,9 @@ void TestSerialize(const Type& target)
 
 int main(int argc, char* argv[])
 {
-	auto command = SearchKeyHashLinkCommand();
+	auto command = LinkForFetchKeyHashCommand();
 	auto byte_array = command.Serialize();
-	std::cout << SearchKeyHashLinkCommand::Parse(byte_array) << std::endl;
+	std::cout << LinkForFetchKeyHashCommand::Parse(byte_array) << std::endl;
 
     return 0;
 }

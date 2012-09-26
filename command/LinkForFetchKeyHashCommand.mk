@@ -1,9 +1,9 @@
 CXX = g++ -std=gnu++0x
-CXXFLAGS = -Wall -g -D SEARCHKEYHASHLINKCOMMAND_UNIT_TEST
+CXXFLAGS = -Wall -g -D LINKFORFETCHKEYHASHCOMMAND_UNIT_TEST
 INCLUDES = 
 LIBS = -lboost_date_time -lboost_iostreams -lboost_serialization -lcrypto -lboost_thread -ldl -lpthread -lboost_system
-OBJS = SearchKeyHashLinkCommand.o
-PROGRAM = SearchKeyHashLinkCommand.out
+OBJS = LinkForFetchKeyHashCommand.o
+PROGRAM = LinkForFetchKeyHashCommand.out
 
 all:$(PROGRAM)
 

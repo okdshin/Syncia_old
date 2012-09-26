@@ -12,6 +12,8 @@
 #include "SearchKeyHashBehavior.h"
 #include "SpreadKeyHashAction.h"
 #include "SpreadKeyHashBehavior.h"
+#include "RequestFileAction.h"
+#include "RequestFileBehavior.h"
 
 namespace sy
 {
@@ -24,19 +26,20 @@ public:
 			unsigned int max_key_hash_count, 
 			unsigned int spread_key_hash_max_count, 
 			unsigned int max_hop_count, 
+			unsigned int buffer_size,
 			nr::ntw::SessionPool::Pointer upper_session_pool,
 			nr::ntw::SessionPool::Pointer lower_session_pool,
 			nr::db::FileKeyHashDb::Pointer file_db, 
 			const nr::NodeId& node_id, std::ostream& os) -> Pointer {
 		auto upload_action = UploadAction::Create(file_db, node_id, os);
 		
-		auto search_link_action = LinkAction::Create(
-			cmd::GetCommandId<cmd::SearchKeyHashLinkCommand>(), upper_session_pool, 
+		auto fetch_link_action = LinkAction::Create(
+			cmd::GetCommandId<cmd::LinkForFetchKeyHashCommand>(), upper_session_pool, 
 			node_id, os);
 		
-		auto search_link_behavior = LinkBehavior::Create(lower_session_pool, 
-			cmd::GetCommandId<cmd::SearchKeyHashLinkCommand>(), os);
-		search_link_behavior->SetOnReceiveLinkQueryFunc(
+		auto fetch_link_behavior = LinkBehavior::Create(lower_session_pool, 
+			cmd::GetCommandId<cmd::LinkForFetchKeyHashCommand>(), os);
+		fetch_link_behavior->SetOnReceiveLinkQueryFunc(
 			[](nr::ntw::Session::Pointer, const nr::ByteArray&){});
 
 		auto search_key_hash_action = 
@@ -51,10 +54,17 @@ public:
 			node_id, spread_key_hash_max_count, max_hop_count, 
 			lower_session_pool, file_db, os);
 
+		auto request_file_action = RequestFileAction::Create(os);
+		auto request_file_behavior = RequestFileBehavior::Create(buffer_size, 
+			[file_db](const nr::db::HashId& hash_id) -> boost::filesystem::path {
+				return file_db->Get(hash_id).GetFilePath();
+			}, os);
+
 		return Pointer(new Syncia(upload_action, 
-			search_link_action, search_link_behavior, 
+			fetch_link_action, fetch_link_behavior, 
 			search_key_hash_action, search_key_hash_behavior,
 			spread_key_hash_action, spread_key_hash_behavior,
+			request_file_action, request_file_behavior,
 			node_id, os));
 	}
 
@@ -63,8 +73,8 @@ public:
 	}
 
 	auto CreateSearchLink(const nr::NodeId& target_node_id) -> void {
-		this->search_link_action->CreateLink(target_node_id, 
-			cmd::SearchKeyHashLinkCommand().Serialize());	
+		this->fetch_link_action->CreateLink(target_node_id, 
+			cmd::LinkForFetchKeyHashCommand().Serialize());	
 	}
 
 	auto SearchKeyHash(const nr::db::KeywardList& keyward_list) -> void {
@@ -75,47 +85,61 @@ public:
 		this->spread_key_hash_action->RequestSpreadKeyHash();
 	} 
 
+	auto RequestFile(const nr::db::HashId& hash_id, const nr::NodeId& node_id, 
+			const boost::filesystem::path& download_directory_path) -> void {
+		this->request_file_action->RequestFile(hash_id, node_id, download_directory_path);
+	}
+
 	auto Bind(nr::ntw::Client::Pointer client) -> void {
-		this->search_link_action->Bind(client);
-		this->search_link_behavior->Bind(client);
+		this->fetch_link_action->Bind(client);
+		this->fetch_link_behavior->Bind(client);
+		this->request_file_action->Bind(client);
 	}
 	
 	auto Bind(BehaviorDispatcher::Pointer dispatcher) -> void {
-		this->search_link_behavior->Bind(dispatcher);
+		this->fetch_link_behavior->Bind(dispatcher);
 		this->search_key_hash_behavior->Bind(dispatcher);
 		this->spread_key_hash_behavior->Bind(dispatcher);
+		this->request_file_behavior->Bind(dispatcher);
 	}
 
 private:
     Syncia(
 		UploadAction::Pointer upload_action, 
-		LinkAction::Pointer search_link_action, 
-		LinkBehavior::Pointer search_link_behavior,
+		LinkAction::Pointer fetch_link_action, 
+		LinkBehavior::Pointer fetch_link_behavior,
 		SearchKeyHashAction::Pointer search_key_hash_action, 
 		SearchKeyHashBehavior::Pointer search_key_hash_behavior, 
 		SpreadKeyHashAction::Pointer spread_key_hash_action, 
 		SpreadKeyHashBehavior::Pointer spread_key_hash_behavior, 
+		RequestFileAction::Pointer request_file_action,
+		RequestFileBehavior::Pointer request_file_behavior,
 		const nr::NodeId& node_id, std::ostream& os) 
 			:upload_action(upload_action), 
-			search_link_action(search_link_action), 
-			search_link_behavior(search_link_behavior), 
+			fetch_link_action(fetch_link_action), 
+			fetch_link_behavior(fetch_link_behavior), 
 			search_key_hash_action(search_key_hash_action),
 			search_key_hash_behavior(search_key_hash_behavior),
 			spread_key_hash_action(spread_key_hash_action),
 			spread_key_hash_behavior(spread_key_hash_behavior),
+			request_file_action(request_file_action),
+			request_file_behavior(request_file_behavior),
 			node_id(node_id), os(os){}
 	
 	UploadAction::Pointer upload_action;
 	
-	LinkAction::Pointer search_link_action;
-	LinkBehavior::Pointer search_link_behavior;
+	LinkAction::Pointer fetch_link_action;
+	LinkBehavior::Pointer fetch_link_behavior;
 
 	SearchKeyHashAction::Pointer search_key_hash_action;
 	SearchKeyHashBehavior::Pointer search_key_hash_behavior;
 
 	SpreadKeyHashAction::Pointer spread_key_hash_action;
 	SpreadKeyHashBehavior::Pointer spread_key_hash_behavior;
-	
+
+	RequestFileAction::Pointer request_file_action;
+	RequestFileBehavior::Pointer request_file_behavior;
+
 	nr::NodeId node_id;
 	std::ostream& os;
 };

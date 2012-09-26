@@ -1,5 +1,5 @@
 #pragma once
-//SearchKeyHashLinkCommand:20120912
+//LinkForFetchKeyHashCommand:20120912
 #include <iostream>
 #include <array>
 #include <algorithm>
@@ -15,14 +15,14 @@
 namespace sy{
 namespace cmd{
 
-class SearchKeyHashLinkCommand {
+class LinkForFetchKeyHashCommand {
 public:
-	SearchKeyHashLinkCommand(){}
+	LinkForFetchKeyHashCommand(){}
 	
-	static auto Parse(const nr::ByteArray& byte_array) -> SearchKeyHashLinkCommand {
+	static auto Parse(const nr::ByteArray& byte_array) -> LinkForFetchKeyHashCommand {
 		std::stringstream ss(nr::utl::ByteArray2String(byte_array));
 		boost::archive::text_iarchive ia(ss);
-		auto command = SearchKeyHashLinkCommand();
+		auto command = LinkForFetchKeyHashCommand();
 		ia >> command;
 		return command;
 	}
@@ -30,7 +30,7 @@ public:
 	auto Serialize() const -> nr::ByteArray {
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
-		oa << static_cast<const SearchKeyHashLinkCommand&>(*this);
+		oa << static_cast<const LinkForFetchKeyHashCommand&>(*this);
 		return nr::utl::String2ByteArray(ss.str());
 	}
 
@@ -41,14 +41,14 @@ private:
 
 };
 
-auto operator<<(std::ostream& os, const SearchKeyHashLinkCommand&) -> std::ostream& {
-	os << "SearchKeyHashLinkCommand";
+auto operator<<(std::ostream& os, const LinkForFetchKeyHashCommand&) -> std::ostream& {
+	os << "LinkForFetchKeyHashCommand";
 	return os;
 }
 
 template<>
-auto GetCommandId<SearchKeyHashLinkCommand>() -> CommandId {
-	return CommandId("search_key_hash_link_command");
+auto GetCommandId<LinkForFetchKeyHashCommand>() -> CommandId {
+	return CommandId("link_for_fetch_key_hash_command");
 }
 
 }

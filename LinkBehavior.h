@@ -7,6 +7,7 @@
 
 namespace sy
 {
+
 class LinkBehavior :
 		public boost::enable_shared_from_this<LinkBehavior> {
 public:
@@ -54,5 +55,6 @@ private:
 	cmd::CommandId link_command_id;
 	std::ostream& os;
 };
+
 }
 

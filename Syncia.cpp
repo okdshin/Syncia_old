@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 	auto lower_session_pool = nr::ntw::SessionPool::Create();
 	auto file_db = nr::db::FileKeyHashDb::Create(0.3, buffer_size, std::cout);
 	auto syncia = Syncia::Create(
-		max_key_hash_count, spread_key_hash_max_count, max_hop_count, 
+		max_key_hash_count, spread_key_hash_max_count, max_hop_count, buffer_size, 
 		upper_session_pool, lower_session_pool, file_db, node_id, std::cout);
 	syncia->Bind(client);
 	syncia->Bind(dispatcher);
@@ -73,6 +73,16 @@ int main(int argc, char* argv[])
 			syncia->RequestSpreadKeyHash();
 		});
 	
+	shell.Register("request", ": request file.", 
+		[syncia](const nr::utl::Shell::ArgumentList& argument_list){
+			syncia->RequestFile(nr::db::HashId(argument_list.at(3)),
+				nr::utl::CreateSocketNodeId(
+					argument_list.at(1), 
+					boost::lexical_cast<int>(argument_list.at(2))),
+				boost::filesystem::path(argument_list.at(4))
+			);
+		});
+	
 	shell.Register("upper", ": show upper linked sessions.", 
 		[upper_session_pool](const nr::utl::Shell::ArgumentList& argument_list){
 			std::cout << "upper session: " << upper_session_pool << std::endl;
@@ -81,6 +91,7 @@ int main(int argc, char* argv[])
 		[lower_session_pool](const nr::utl::Shell::ArgumentList& argument_list){
 			std::cout << "lower session: " << lower_session_pool << std::endl;
 		});
+	
 	server->StartAccept();
 	shell.Start();
 	
