@@ -12,19 +12,24 @@
 #include "../neuria/Neuria.h"
 #include "../neuria/database/DataBase.h"
 #include "Common.h"
-#include "SearchKeyHashCommandData.h"
-#include "../TypeWrapper.h"
 
 namespace sy{
 namespace cmd{
+
+class IsAnswerType{};
+using IsAnswer = nr::utl::TypeWrapper<bool, IsAnswerType>;
+
+const auto QUERY = IsAnswer(false);
+const auto ANSWER = IsAnswer(true);
 
 class FetchCommand {
 public:
 	using Route = std::vector<nr::NodeId>;
 
 	FetchCommand(){}
-	FetchCommand(const IsAnswer& is_answer, const nr::ByteArray& wrapped_byte_array) 
-		: is_answer(is_answer()), byte_array(wrapped_byte_array){}
+	FetchCommand(const IsAnswer& is_answer, const Route& route, const nr::ByteArray& wrapped_byte_array) 
+		: is_answer(is_answer()), route_node_id_list(route), 
+		byte_array(wrapped_byte_array){}
 
 	static auto Parse(const nr::ByteArray& byte_array) -> FetchCommand {
 		std::stringstream ss(nr::utl::ByteArray2String(byte_array));
@@ -45,19 +50,21 @@ public:
 	auto AddRoute(const nr::NodeId& node_id) -> void {
 		this->route_node_id_list.push_back(node_id);
 	}
-	auto GetRoute()const -> Route { return this->route_node_id_list; }
+	auto GetRoute()const -> Route { return route_node_id_list; }
 
 	auto GetWrappedByteArray() -> nr::ByteArray { return byte_array; }
 
 	auto IsReturnBackToStart(const nr::NodeId& node_id) -> bool {
-		return route_node_id_list.front() == node_id;	
+		return this->is_answer && route_node_id_list.front() == node_id;	
 	}
 
 	auto GetOneStepCloserNodeId(const nr::NodeId& node_id) -> nr::NodeId {
 		auto self_iter = std::find(this->route_node_id_list.begin(), 
 			this->route_node_id_list.end(), node_id);
-		assert("call IsReturnBackStart and check before." 
+		assert("not found self node id in route." 
 			&& self_iter != this->route_node_id_list.end());
+		assert("call IsReturnBackToStart and check before." 
+			&& self_iter != this->route_node_id_list.begin());
 		return *(self_iter-1);
 	}
 
@@ -79,14 +86,13 @@ private:
 
 auto operator<<(std::ostream& os, 
 		const FetchCommand& command) -> std::ostream& {
-	os << command.is_answer;
+	os << "is answer:" << command.is_answer;
+	std::copy(command.route_node_id_list.begin(), 
+		command.route_node_id_list.end(), std::ostream_iterator<nr::NodeId>(os, " "));
+	os << "\n";
+	std::copy(command.byte_array.begin(), 
+		command.byte_array.end(), std::ostream_iterator<char>(os, ""));
 	return os;
-}
-
-template<>
-auto GetCommandId<FetchCommand>() 
-		-> DispatchCommand::CommandId {
-	return DispatchCommand::CommandId("fetch_command");
 }
 
 }

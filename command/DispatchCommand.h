@@ -12,13 +12,14 @@
 namespace sy{
 namespace cmd{
 
+class CommandIdType{};
+using CommandId = nr::utl::TypeWrapper<std::string, CommandIdType>;
+
 class DispatchCommand{
-public:
-	using CommandId = std::string;
-    
+public: 
 	DispatchCommand(){}
 	DispatchCommand(const CommandId& command_id, const nr::ByteArray& byte_array)
-		: command_id(command_id), byte_array(byte_array){}
+		: command_id_str(command_id()), byte_array(byte_array){}
 
 	static auto Parse(const nr::ByteArray& byte_array) -> DispatchCommand {
 		std::stringstream ss(nr::utl::ByteArray2String(byte_array));
@@ -35,22 +36,22 @@ public:
 		return nr::utl::String2ByteArray(ss.str());	
 	}
 
-	auto GetCommandId()const -> CommandId { return command_id; }
+	auto GetCommandId()const -> CommandId { return CommandId(command_id_str); }
 	auto GetWrappedByteArray()const -> nr::ByteArray { return byte_array; }
 
 private:
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive& ar, unsigned int ver){
-		ar & command_id & byte_array;
+		ar & command_id_str & byte_array;
 	}
 
-	CommandId command_id;
+	std::string command_id_str;
 	nr::ByteArray byte_array;
 };
 
 auto operator<<(std::ostream& os, const DispatchCommand& command) -> std::ostream& {
-	os << "command_id:" << command.GetCommandId() << " byte_array:" 
+	os << "command_id:" << command.GetCommandId()() << " byte_array:" 
 		<< nr::utl::ByteArray2String(command.GetWrappedByteArray()) << std::endl;
 	return os;
 }

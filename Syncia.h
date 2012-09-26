@@ -1,147 +1,122 @@
 #pragma once
-//Syncia:20120913
+//Syncia:20120926
 #include <iostream>
-#include <boost/filesystem.hpp>
-#include "SearchKeyHashQueryBehavior.h"
-#include "SearchKeyHashAnswerBehavior.h"
-#include "SearchKeyHashQueryAction.h"
-#include "RequestFileQueryAction.h"
-#include "RequestFileQueryBehavior.h"
-#include "neuria/database/DataBase.h"
+#include "neuria/Neuria.h"
+#include "neuria/utility/Shell.h"
+#include "command/Command.h"
+#include "BehaviorDispatcher.h"
+#include "UploadAction.h"
+#include "LinkAction.h"
+#include "LinkBehavior.h"
+#include "SearchKeyHashAction.h"
+#include "SearchKeyHashBehavior.h"
+#include "SpreadKeyHashAction.h"
+#include "SpreadKeyHashBehavior.h"
 
 namespace sy
 {
-class Syncia : public boost::enable_shared_from_this<Syncia> {
+
+class Syncia{
 public:
 	using Pointer = boost::shared_ptr<Syncia>;
 
-	static auto Create(boost::asio::io_service& service, 
-			const nr::NodeId& node_id, 
-			int buffer_size, int max_hop_count, 
-			const boost::filesystem::path& upload_directory_path,
-			const boost::filesystem::path& download_directory_path, 
-			double threshold, std::ostream& os) -> Pointer {
+	static auto Create(
+			unsigned int max_key_hash_count, 
+			unsigned int spread_key_hash_max_count, 
+			unsigned int max_hop_count, 
+			nr::ntw::SessionPool::Pointer upper_session_pool,
+			nr::ntw::SessionPool::Pointer lower_session_pool,
+			nr::db::FileKeyHashDb::Pointer file_db, 
+			const nr::NodeId& node_id, std::ostream& os) -> Pointer {
+		auto upload_action = UploadAction::Create(file_db, node_id, os);
 		
-		auto file_db = nr::db::FileKeyHashDb::Create(threshold, buffer_size, os);
-		auto skhab = SearchKeyHashAnswerBehavior::Create(
-			service, node_id, buffer_size, file_db, os);
+		auto search_link_action = LinkAction::Create(
+			cmd::GetCommandId<cmd::SearchKeyHashLinkCommand>(), upper_session_pool, 
+			node_id, os);
 		
-		auto search_link_pool = nr::ntw::SessionPool::Create();	
-		auto skhqb = SearchKeyHashQueryBehavior::Create(
-			service, node_id, max_hop_count, search_link_pool, file_db, os);
-		
-		skhqb->SetSearchKeyHashAnswerer(
-			[skhab, &os](const cmd::SearchKeyHashQueryCommand& command){
-				os << "return back!" << std::endl;
-				skhab->AnswerSearchKeyHash(
-					cmd::SearchKeyHashQueryCommand2SearchKeyHashAnswerCommand(
-						command));});
-		
-		auto skhqa = SearchKeyHashQueryAction::Create(
-			service, node_id, buffer_size, search_link_pool, os);
-		
-		auto rfqa = RequestFileQueryAction::Create(download_directory_path, os);		
-		auto rfqb = RequestFileQueryBehavior::Create(buffer_size, 
-			[file_db](const nr::db::FileKeyHash::HashId& hash_id){
-				return file_db->Get(hash_id).GetFilePath();
-			}, os);
-		std::cout << "upload_directory" << upload_directory_path << std::endl;	
-		return Pointer(new Syncia(skhab, skhqb, skhqa, rfqa, rfqb, file_db, 
-			node_id, upload_directory_path, os));
+		auto search_link_behavior = LinkBehavior::Create(lower_session_pool, 
+			cmd::GetCommandId<cmd::SearchKeyHashLinkCommand>(), os);
+		search_link_behavior->SetOnReceiveLinkQueryFunc(
+			[](nr::ntw::Session::Pointer, const nr::ByteArray&){});
+
+		auto search_key_hash_action = 
+			SearchKeyHashAction::Create(upper_session_pool, node_id, os);
+		auto search_key_hash_behavior = SearchKeyHashBehavior::Create(
+			node_id, max_key_hash_count, max_hop_count, 
+			upper_session_pool, file_db, os);
+	
+		auto spread_key_hash_action = 
+			SpreadKeyHashAction::Create(lower_session_pool, node_id, os);
+		auto spread_key_hash_behavior = SpreadKeyHashBehavior::Create(
+			node_id, spread_key_hash_max_count, max_hop_count, 
+			lower_session_pool, file_db, os);
+
+		return Pointer(new Syncia(upload_action, 
+			search_link_action, search_link_behavior, 
+			search_key_hash_action, search_key_hash_behavior,
+			spread_key_hash_action, spread_key_hash_behavior,
+			node_id, os));
 	}
 
-	auto Bind(nr::ntw::BehaviorDispatcher::Pointer dispatcher) -> void {
-		this->skhqb->Bind(dispatcher);
-		this->skhab->Bind(dispatcher);
-		this->rfqb->Bind(dispatcher);
+	auto UploadDirectory(const boost::filesystem::path& upload_directory_path) -> void {
+		this->upload_action->UploadDirectory(upload_directory_path);	
 	}
 
-	auto Bind(nr::ntw::Client::Pointer client) -> void { 
-		this->skhab->Bind(client);
-		this->skhqa->Bind(client);
-		this->rfqa->Bind(client);
+	auto CreateSearchLink(const nr::NodeId& target_node_id) -> void {
+		this->search_link_action->CreateLink(target_node_id, 
+			cmd::SearchKeyHashLinkCommand().Serialize());	
 	}
 
-	auto ConnectSearchLink(const nr::NodeId& node_id) -> void {
-		this->skhqa->ConnectSearchLink(node_id);	
-	}
+	auto SearchKeyHash(const nr::db::KeywardList& keyward_list) -> void {
+		this->search_key_hash_action->SearchKeyHash(keyward_list);
+	} 
+	
+	auto RequestSpreadKeyHash() -> void {
+		this->spread_key_hash_action->RequestSpreadKeyHash();
+	} 
 
-	auto QuerySearchKeyHash(
-			const nr::db::FileKeyHashDb::KeywardList& keyward_list) -> void {
-		this->skhqa->QuerySearchKeyHash(keyward_list);	
-	}
-
-	auto RequestFile(const nr::db::FileKeyHash::HashId& hash_id, 
-			const nr::NodeId& node_id) -> void {
-		this->rfqa->RequestFile(hash_id, node_id);	
-	}
-
-	auto SetDownloadDirectoryPath(
-			const std::string& download_directory_path) -> void {
-		this->rfqa->SetDownloadDirectoryPath(download_directory_path);	
-	}
-
-	auto UploadFile(const nr::db::FileKeyHash::Keyward& keyward, 
-			const boost::filesystem::path& file_path) -> void {
-		std::cout << "SelfNodeId: " << this->node_id << std::endl;
-		this->db->Add(keyward, file_path, this->node_id);
+	auto Bind(nr::ntw::Client::Pointer client) -> void {
+		this->search_link_action->Bind(client);
+		this->search_link_behavior->Bind(client);
 	}
 	
-	auto UploadDirectory() -> void {
-		std::cout << this->upload_directory_path.string() << std::endl;
-		const auto end = boost::filesystem::recursive_directory_iterator();
-		for(auto path_iter = boost::filesystem::recursive_directory_iterator(
-				this->upload_directory_path); path_iter != end; ++path_iter){
-			if(boost::filesystem::is_regular_file(path_iter->status())){
-				const auto file_path = boost::filesystem::path(*path_iter);
-				this->db->Add(
-					nr::db::FileKeyHash::Keyward(file_path.filename().string()), 
-					file_path, this->node_id);
-			}
-		}
+	auto Bind(BehaviorDispatcher::Pointer dispatcher) -> void {
+		this->search_link_behavior->Bind(dispatcher);
+		this->search_key_hash_behavior->Bind(dispatcher);
+		this->spread_key_hash_behavior->Bind(dispatcher);
 	}
-/*
-	auto UpdateDb(directory_path) -> void {
-		const auto end = boost::filesystem::recursive_directory_iterator();
-		for(auto path_iter = boost::filesystem::recursive_directory_iterator(
-				directory_path); path_iter != end; ++path_iter){
-			if(boost::filesystem::is_regular_file(path_iter->status())){
-				const auto file_path = boost::filesystem::path(*path_iter);
-				this->directory_db->Add(file_path, last_write_time);
-			}
-		}
-			
-	}
-*/
-	auto GetFileKeyHashDb() const -> nr::db::FileKeyHashDb::Pointer { return db; }
-
 
 private:
-    Syncia(SearchKeyHashAnswerBehavior::Pointer skhab,
-			SearchKeyHashQueryBehavior::Pointer skhqb, 
-			SearchKeyHashQueryAction::Pointer skhqa,
-			RequestFileQueryAction::Pointer rfqa,
-			RequestFileQueryBehavior::Pointer rfqb, 
-			nr::db::FileKeyHashDb::Pointer file_db,
-			const nr::NodeId& node_id,
-			const boost::filesystem::path& upload_directory_path,
-			std::ostream& os)
-			: skhab(skhab), skhqb(skhqb), skhqa(skhqa), 
-			rfqa(rfqa), rfqb(rfqb), db(file_db), 
-			node_id(node_id), upload_directory_path(upload_directory_path), os(os){}
+    Syncia(
+		UploadAction::Pointer upload_action, 
+		LinkAction::Pointer search_link_action, 
+		LinkBehavior::Pointer search_link_behavior,
+		SearchKeyHashAction::Pointer search_key_hash_action, 
+		SearchKeyHashBehavior::Pointer search_key_hash_behavior, 
+		SpreadKeyHashAction::Pointer spread_key_hash_action, 
+		SpreadKeyHashBehavior::Pointer spread_key_hash_behavior, 
+		const nr::NodeId& node_id, std::ostream& os) 
+			:upload_action(upload_action), 
+			search_link_action(search_link_action), 
+			search_link_behavior(search_link_behavior), 
+			search_key_hash_action(search_key_hash_action),
+			search_key_hash_behavior(search_key_hash_behavior),
+			spread_key_hash_action(spread_key_hash_action),
+			spread_key_hash_behavior(spread_key_hash_behavior),
+			node_id(node_id), os(os){}
 	
-	nr::ntw::Client::Pointer client;
+	UploadAction::Pointer upload_action;
 	
-	SearchKeyHashAnswerBehavior::Pointer skhab;
-	SearchKeyHashQueryBehavior::Pointer skhqb;
-	SearchKeyHashQueryAction::Pointer skhqa;
-	
-	RequestFileQueryAction::Pointer rfqa;
-	RequestFileQueryBehavior::Pointer rfqb; 
+	LinkAction::Pointer search_link_action;
+	LinkBehavior::Pointer search_link_behavior;
 
-	nr::db::FileKeyHashDb::Pointer db;
+	SearchKeyHashAction::Pointer search_key_hash_action;
+	SearchKeyHashBehavior::Pointer search_key_hash_behavior;
+
+	SpreadKeyHashAction::Pointer spread_key_hash_action;
+	SpreadKeyHashBehavior::Pointer spread_key_hash_behavior;
+	
 	nr::NodeId node_id;
-	boost::filesystem::path upload_directory_path;
 	std::ostream& os;
 };
 

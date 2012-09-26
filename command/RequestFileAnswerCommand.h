@@ -51,7 +51,7 @@ private:
 auto operator<<(std::ostream& os,
 		const RequestFileAnswerCommand& command) -> std::ostream& {
 	os << "FilePath: " << command.GetFilePath() 
-		<< "FileByteArra: ";
+		<< "FileByteArray: ";
 	auto file_byte_array = command.GetFileByteArray();
 	std::copy(file_byte_array.begin(), file_byte_array.end(), 
 		std::ostream_iterator<char>(os, ""));
@@ -59,9 +59,8 @@ auto operator<<(std::ostream& os,
 }
 
 template<>
-auto GetCommandId<RequestFileAnswerCommand>() 
-		-> DispatchCommand::CommandId {
-	return DispatchCommand::CommandId("request_file_answer");
+auto GetCommandId<RequestFileAnswerCommand>() -> CommandId {
+	return CommandId("request_file_answer");
 }
 
 }

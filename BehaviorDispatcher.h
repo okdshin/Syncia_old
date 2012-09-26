@@ -18,16 +18,17 @@ public:
 		return Pointer(new BehaviorDispatcher(service, os));	
 	}
 	
-	auto Bind(nr::ntw::Server::Pointer server) -> void {
-		SetOnReceiveFuncOnly(server, boost::bind(
-			&BehaviorDispatcher::Dispatch, this->shared_from_this(), _1, _2));
-	}
-
-	auto RegisterFunc(const cmd::DispatchCommand::CommandId& command_id, 
+	auto RegisterFunc(const cmd::CommandId& command_id, 
 			nr::ntw::Session::OnReceiveFunc func) -> void{
 		std::cout << "registered " << command_id << std::endl;
-		this->func_dict[command_id] = func;
+		this->func_dict[command_id()] = func;
 	}
+	
+	auto GetOnReceiveFunc() -> nr::ntw::Session::OnReceiveFunc {
+		return boost::bind(
+			&BehaviorDispatcher::Dispatch, this->shared_from_this(), _1, _2);
+	}
+
 
 private:
     BehaviorDispatcher(boost::asio::io_service& service, std::ostream& os)
@@ -39,7 +40,7 @@ private:
 		//	<< utl::ByteArray2String(byte_array) << std::endl;
 		auto command = cmd::DispatchCommand::Parse(byte_array);
 		this->os << "received dispatch command: " << command << std::endl;
-		if(this->func_dict.find(command.GetCommandId()) == this->func_dict.end()){
+		if(this->func_dict.find(command.GetCommandId()()) == this->func_dict.end()){
 			this->os << "invalid command id:" << command.GetCommandId() << std::endl;
 			session->Close();
 			return;
@@ -48,7 +49,7 @@ private:
 			this->os << "call command(id:" 
 				<< command.GetCommandId() << ")" << std::endl;
 			this->service.post([this, session, command](){
-				this->func_dict[command.GetCommandId()](
+				this->func_dict[command.GetCommandId()()](
 					session, command.GetWrappedByteArray());});
 		}
 	}
@@ -57,7 +58,7 @@ private:
 		std::ostream& os, const BehaviorDispatcher& dispatcher) -> std::ostream&;
 
 	boost::asio::io_service& service;
-	std::map<cmd::DispatchCommand::CommandId, nr::ntw::Session::OnReceiveFunc> func_dict;
+	std::map<cmd::CommandId::WrappedType, nr::ntw::Session::OnReceiveFunc> func_dict;
 	std::ostream& os;
 };
 

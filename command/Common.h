@@ -7,8 +7,8 @@ namespace sy{
 namespace cmd{
 
 template<class Command>
-auto GetCommandId() -> DispatchCommand::CommandId {
-	return DispatchCommand::CommandId("not registered function");	
+auto GetCommandId() -> CommandId {
+	return CommandId("not registered function");	
 }
 
 template<class Command>

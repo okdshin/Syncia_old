@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>320</width>
+    <height>320</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>320</width>
+    <height>320</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>778</width>
+    <height>614</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Syncia</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>778</width>
+     <height>562</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>778</width>
+     <height>562</height>
+    </size>
+   </property>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>321</width>
+      <height>301</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
+     <property name="spacing">
+      <number>3</number>
+     </property>
+     <property name="leftMargin">
+      <number>3</number>
+     </property>
+     <property name="rightMargin">
+      <number>3</number>
+     </property>
+     <property name="bottomMargin">
+      <number>3</number>
+     </property>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLineEdit" name="lineEdit"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>search</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QTableWidget" name="tableWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <column>
+        <property name="text">
+         <string>FileName</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>HashId</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>BirthUniversalTime</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>320</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menuOpenDownloadDirectory">
+     <property name="title">
+      <string>Open</string>
+     </property>
+     <addaction name="actionDownloadDirectory"/>
+     <addaction name="actionUploadDirectory"/>
+    </widget>
+    <addaction name="menuOpenDownloadDirectory"/>
+    <addaction name="actionUploadFile"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionEditDonwloadDirectoryPath"/>
+    <addaction name="actionUploadDirectoryPath"/>
+    <addaction name="actionFileCheckInterval"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionHowToUse"/>
+    <addaction name="separator"/>
+    <addaction name="actionSyncia"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionUploadFile">
+   <property name="text">
+    <string>UploadFile</string>
+   </property>
+  </action>
+  <action name="actionOepnUploadDirectory">
+   <property name="text">
+    <string>OepnUploadDirectory</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionEditDonwloadDirectoryPath">
+   <property name="text">
+    <string>DonwloadDirectoryPath</string>
+   </property>
+  </action>
+  <action name="actionUploadDirectoryPath">
+   <property name="text">
+    <string>UploadDirectoryPath</string>
+   </property>
+  </action>
+  <action name="actionFileCheckInterval">
+   <property name="text">
+    <string>FileCheckInterval</string>
+   </property>
+  </action>
+  <action name="actionHowToUse">
+   <property name="text">
+    <string>HowToUse</string>
+   </property>
+  </action>
+  <action name="actionSyncia">
+   <property name="text">
+    <string>Version</string>
+   </property>
+  </action>
+  <action name="actionDownloadDirectory">
+   <property name="text">
+    <string>DownloadDirectory</string>
+   </property>
+  </action>
+  <action name="actionUploadDirectory">
+   <property name="text">
+    <string>UploadDirectory</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

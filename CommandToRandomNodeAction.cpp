@@ -1,5 +1,5 @@
-#ifdef LINKACTION_UNIT_TEST
-#include "LinkAction.h"
+#ifdef COMMANDTORANDOMNODEACTION_UNIT_TEST
+#include "CommandToRandomNodeAction.h"
 #include <iostream>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
@@ -16,20 +16,27 @@ void TestCuiApp(int argc, char* argv[]){
 	auto client = nr::ntw::SocketClient::Create(service, buffer_size, std::cout);
 	
 	auto connected_pool = nr::ntw::SessionPool::Create();
-	auto link_action = LinkAction::Create(
-		cmd::CommandId("test link query command"), connected_pool, node_id, std::cout);
+	auto command_to_random_node_action = 
+		CommandToRandomNodeAction::Create(connected_pool, std::cout);
 	
-	link_action->Bind(client);
+	command_to_random_node_action->Bind(client);
 
 	auto shell = nr::utl::Shell(std::cout);
 	nr::utl::RegisterExitFunc(shell);
 	shell.Register("link", "create new link.", 
-		[link_action](const nr::utl::Shell::ArgumentList& argument_list){
-			link_action->CreateLink(
+		[command_to_random_node_action](const nr::utl::Shell::ArgumentList& argument_list){
+			command_to_random_node_action->CreateLink(
 				nr::utl::CreateSocketNodeId(
 					argument_list.at(1), 
 					boost::lexical_cast<int>(argument_list.at(2))),
+				nr::ntw::DispatchCommand::CommandId("test link query command"),
 				nr::utl::String2ByteArray("link please!! 12345"));
+		});
+	shell.Register("query", "query to linked node at random.",
+		[command_to_random_node_action](const nr::utl::Shell::ArgumentList& argument_list){
+			command_to_random_node_action->QueryRequestAtRandom(
+				nr::ntw::DispatchCommand::CommandId("test fetch query"),
+				nr::utl::String2ByteArray("fetch! fetch!! fetch!!!"));
 		});
 	shell.Start();
 	t.join();
@@ -38,7 +45,7 @@ void TestCuiApp(int argc, char* argv[]){
 int main(int argc, char* argv[])
 {
 	TestCuiApp(argc, argv);
-	//TestManyLinkAction();
+	//TestManyCommandToRandomNodeAction();
  
   	return 0;
 }

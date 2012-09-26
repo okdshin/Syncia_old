@@ -15,24 +15,29 @@ class LinkAction :
 public:
 	using Pointer = boost::shared_ptr<LinkAction>;
 
-	static auto Create(nr::ntw::SessionPool::Pointer linked_session_pool, 
+	static auto Create(const cmd::CommandId& command_id, 
+			nr::ntw::SessionPool::Pointer linked_session_pool, 
+			const nr::NodeId& node_id,
 			std::ostream& os) -> Pointer {
-		return Pointer(new LinkAction(linked_session_pool, os));
+		return Pointer(new LinkAction(command_id, linked_session_pool, node_id, os));
 	}
 	
 	auto Bind(nr::ntw::Client::Pointer client) -> void {
 		this->client = client;
 	}
 
-	auto CreateLink(const nr::NodeId& node_id, 
-			const nr::ntw::DispatchCommand::CommandId& link_command_id,
-			const nr::ByteArray& serialized_command_byte_array) -> void {
-		this->client->Connect(node_id,
-			[this, link_command_id, serialized_command_byte_array]
+	auto CreateLink(const nr::NodeId& target_node_id, 
+			const nr::ByteArray& wrapped_byte_array) -> void {
+		this->client->Connect(target_node_id,
+			[this, wrapped_byte_array]
 					(nr::ntw::Session::Pointer session){
 				this->pool->Add(session);	
-				session->Send(nr::ntw::DispatchCommand(link_command_id,
-					serialized_command_byte_array).Serialize());	
+				session->Send(cmd::DispatchCommand(this->command_id,
+						cmd::LinkCommand(
+							this->node_id, wrapped_byte_array
+						).Serialize()
+					).Serialize(), 
+					[](nr::ntw::Session::Pointer){});	
 			},
 			[this](nr::ntw::Session::Pointer session, 
 					const nr::ByteArray& byte_array){
@@ -44,11 +49,14 @@ public:
 	}
 
 private:
-	LinkAction(nr::ntw::SessionPool::Pointer pool, std::ostream& os) 
-		: pool(pool), os(os){}
+	LinkAction(const cmd::CommandId& command_id, nr::ntw::SessionPool::Pointer pool, 
+		const nr::NodeId& node_id, std::ostream& os) 
+		: command_id(command_id), pool(pool), node_id(node_id), os(os){}
 
 	nr::ntw::Client::Pointer client;
+	cmd::CommandId command_id;
 	nr::ntw::SessionPool::Pointer pool;
+	nr::NodeId node_id;
 	std::ostream& os;
 	
 };

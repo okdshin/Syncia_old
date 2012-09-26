@@ -3,7 +3,6 @@
 #include <iostream>
 #include <string>
 #include "../neuria/Neuria.h"
-#include "../neuria/database/DataBase.h"
 #include "Common.h"
 
 namespace sy{
@@ -12,8 +11,8 @@ namespace cmd{
 class RequestFileQueryCommand{
 public:
     RequestFileQueryCommand(){}
-    RequestFileQueryCommand(const nr::db::FileKeyHash::HashId& hash_id) 
-		: hash_id(hash_id){}
+    RequestFileQueryCommand(const nr::db::HashId& hash_id) 
+		: hash_id(hash_id()){}
 
 	static auto Parse(const nr::ByteArray& byte_array) -> RequestFileQueryCommand {
 		std::stringstream ss(nr::utl::ByteArray2String(byte_array));
@@ -30,7 +29,7 @@ public:
 		return nr::utl::String2ByteArray(ss.str());
 	}
 
-	auto GetRequestHashId() const -> nr::db::FileKeyHash::HashId { return hash_id; }
+	auto GetRequestHashId() const -> nr::db::HashId { return nr::db::HashId(hash_id); }
 
 private:
 	friend class boost::serialization::access;
@@ -39,7 +38,7 @@ private:
 		ar & hash_id;
 	}
 	
-	nr::db::FileKeyHash::HashId hash_id;;
+	nr::db::HashId::WrappedType hash_id;;
 };
 
 auto operator<<(std::ostream& os,
@@ -49,9 +48,8 @@ auto operator<<(std::ostream& os,
 }
 
 template<>
-auto GetCommandId<RequestFileQueryCommand>() 
-		-> DispatchCommand::CommandId {
-	return DispatchCommand::CommandId("request_file_query");
+auto GetCommandId<RequestFileQueryCommand>() -> CommandId {
+	return CommandId("request_file_query");
 }
 
 }

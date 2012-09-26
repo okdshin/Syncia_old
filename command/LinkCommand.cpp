@@ -1,5 +1,5 @@
-#ifdef FETCHCOMMAND_UNIT_TEST
-#include "FetchCommand.h"
+#ifdef LINKCOMMAND_UNIT_TEST
+#include "LinkCommand.h"
 #include <iostream>
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
@@ -27,9 +27,7 @@ void TestSerialize(const Type& target)
 
 int main(int argc, char* argv[])
 {
-	auto command = FetchCommand(false, nr::utl::String2ByteArray("hello"));
-	command.AddRoute(nr::NodeId("nodeid1"));
-	command.AddRoute(nr::NodeId("nodeid2"));
+	auto command = LinkCommand(nr::utl::CreateSocketNodeId("localhost", 54321), nr::utl::String2ByteArray("[this is wrapped byte array]"));
 	/*
 	command.AddFindKeyHashList({nr::db::FileKeyHash(
 		nr::db::FileKeyHash::HashId("hash_id"), 
@@ -39,7 +37,7 @@ int main(int argc, char* argv[])
 	//TestSerialize(command);
 	*/
 	auto byte_array = command.Serialize();	
-	std::cout << FetchCommand::Parse(byte_array).GetRoute().size() << std::endl;
+	std::cout << LinkCommand::Parse(byte_array) << std::endl;
 
     return 0;
 }

@@ -18,19 +18,22 @@ int main(int argc, char* argv[])
 	const int buffer_size = 128;
 	auto server = nr::ntw::SocketServer::Create(
 		service, local_port, buffer_size, std::cout);
-	auto dispatcher = nr::ntw::BehaviorDispatcher::Create(service, std::cout);
-	dispatcher->Bind(server);
+	auto dispatcher = BehaviorDispatcher::Create(service, std::cout);
+	SetOnReceiveFuncOnly(server, dispatcher->GetOnReceiveFunc());
+	
+	auto client = nr::ntw::SocketClient::Create(service, buffer_size, std::cout);
 
-	auto accepted_pool = AcceptedPool(nr::ntw::SessionPool::Create());
+	auto pool = nr::ntw::SessionPool::Create();
 
-	auto link_behavior = LinkBehavior::Create(accepted_pool, 
-		nr::ntw::DispatchCommand::CommandId("test link query command"), std::cout);
+	auto link_behavior = LinkBehavior::Create(pool, 
+		cmd::CommandId("test link query command"), std::cout);
 	link_behavior->SetOnReceiveLinkQueryFunc(
 		[](nr::ntw::Session::Pointer session, const nr::ByteArray& byte_array){
 			std::cout << nr::utl::ByteArray2String(byte_array) << std::endl;	
 		});
 
 	link_behavior->Bind(dispatcher);
+	link_behavior->Bind(client);
 
 	server->StartAccept();
 	t.join();

@@ -79,9 +79,8 @@ auto operator<<(std::ostream& os,
 }
 
 template<>
-auto GetCommandId<SearchKeyHashQueryCommand>() 
-		-> DispatchCommand::CommandId {
-	return DispatchCommand::CommandId("search_key_hash_query");
+auto GetCommandId<SearchKeyHashQueryCommand>() -> CommandId {
+	return CommandId("search_key_hash_query");
 }
 
 }

@@ -1,5 +1,5 @@
-#ifdef FETCHCOMMAND_UNIT_TEST
-#include "FetchCommand.h"
+#ifdef SPREADKEYHASHCOMMAND_UNIT_TEST
+#include "SpreadKeyHashCommand.h"
 #include <iostream>
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
@@ -27,19 +27,15 @@ void TestSerialize(const Type& target)
 
 int main(int argc, char* argv[])
 {
-	auto command = FetchCommand(false, nr::utl::String2ByteArray("hello"));
-	command.AddRoute(nr::NodeId("nodeid1"));
-	command.AddRoute(nr::NodeId("nodeid2"));
-	/*
-	command.AddFindKeyHashList({nr::db::FileKeyHash(
-		nr::db::FileKeyHash::HashId("hash_id"), 
-		nr::db::FileKeyHash::Keyward("keyward"), 
+	auto command = SpreadKeyHashCommand();
+	command.AddSpreadKeyHashList({nr::db::FileKeyHash(
+		nr::db::HashId("hash_id"), 
+		nr::db::Keyward("keyward"), 
 		nr::NodeId("owner_id"), boost::filesystem::path("./"))});
-	command.AddRouteNodeId("owner_id");
+	std::cout << command << std::endl;
 	//TestSerialize(command);
-	*/
-	auto byte_array = command.Serialize();	
-	std::cout << FetchCommand::Parse(byte_array).GetRoute().size() << std::endl;
+	auto byte_array = command.Serialize();
+	std::cout << SpreadKeyHashCommand::Parse(byte_array) << std::endl;
 
     return 0;
 }
