@@ -16,7 +16,7 @@ class RequestFileBehavior :
 public:
 	using Pointer = boost::shared_ptr<RequestFileBehavior>;
     using FilePathFetcher = boost::function<
-		boost::filesystem::path (const nr::db::HashId&)>;
+		nr::FileSystemPath (const nr::db::HashId&)>;
 
 	static auto Create(int buffer_size, FilePathFetcher file_fetcher, 
 			std::ostream& os) -> Pointer {

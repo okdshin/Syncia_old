@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 	
 	shell.Register("upload", ": upload directory.", 
 		[syncia](const nr::utl::Shell::ArgumentList& argument_list){
-			syncia->UploadDirectory(boost::filesystem::path(argument_list.at(1)));
+			syncia->UploadDirectory(nr::FileSystemPath(argument_list.at(1)));
 		});
 	shell.Register("db", ": show uploaded files.", 
 		[file_db](const nr::utl::Shell::ArgumentList& argument_list){
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 				nr::utl::CreateSocketNodeId(
 					argument_list.at(1), 
 					boost::lexical_cast<int>(argument_list.at(2))),
-				boost::filesystem::path(argument_list.at(4))
+				nr::FileSystemPath(argument_list.at(4))
 			);
 		});
 	

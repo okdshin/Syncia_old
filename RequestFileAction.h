@@ -9,8 +9,8 @@
 namespace sy
 {
 
-auto ParseFile(const boost::filesystem::path& download_directory_path, 
-		const boost::filesystem::path& file_path, 
+auto ParseFile(const nr::FileSystemPath& download_directory_path, 
+		const nr::FileSystemPath& file_path, 
 		const nr::ByteArray& file_byte_array) -> void {
 	std::ofstream ofs(
 		(download_directory_path.string()+file_path.leaf().string()).c_str(), 
@@ -33,7 +33,7 @@ public:
 	}
 
 	auto RequestFile(const nr::db::HashId& hash_id, const nr::NodeId& node_id, 
-			const boost::filesystem::path& download_directory_path) -> void {
+			const nr::FileSystemPath& download_directory_path) -> void {
 		Communicate(this->client, node_id,
 			cmd::DispatchCommand(
 				cmd::GetCommandId<cmd::RequestFileQueryCommand>(),

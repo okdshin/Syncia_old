@@ -56,7 +56,7 @@ public:
 
 		auto request_file_action = RequestFileAction::Create(os);
 		auto request_file_behavior = RequestFileBehavior::Create(buffer_size, 
-			[file_db](const nr::db::HashId& hash_id) -> boost::filesystem::path {
+			[file_db](const nr::db::HashId& hash_id) -> nr::FileSystemPath {
 				return file_db->Get(hash_id).GetFilePath();
 			}, os);
 
@@ -68,7 +68,7 @@ public:
 			node_id, os));
 	}
 
-	auto UploadDirectory(const boost::filesystem::path& upload_directory_path) -> void {
+	auto UploadDirectory(const nr::FileSystemPath& upload_directory_path) -> void {
 		this->upload_action->UploadDirectory(upload_directory_path);	
 	}
 
@@ -86,7 +86,7 @@ public:
 	} 
 
 	auto RequestFile(const nr::db::HashId& hash_id, const nr::NodeId& node_id, 
-			const boost::filesystem::path& download_directory_path) -> void {
+			const nr::FileSystemPath& download_directory_path) -> void {
 		this->request_file_action->RequestFile(hash_id, node_id, download_directory_path);
 	}
 
