@@ -8,7 +8,7 @@
 #include "command/Command.h"
 #include "BehaviorDispatcher.h"
 
-namespace sy
+namespace syncia
 {
 
 class FetchBehavior : 
@@ -17,18 +17,18 @@ public:
 	using Pointer = boost::shared_ptr<FetchBehavior>;
 
 	using IsTurningPointDecider = boost::function<
-		cmd::IsAnswer (const cmd::FetchCommand::Route&, const nr::ByteArray&)>;
+		command::IsAnswer (const command::FetchCommand::Route&, const neuria::ByteArray&)>;
 	using FetchQueryRedirector = boost::function<
-		nr::ByteArray (const nr::ByteArray&)>;
+		neuria::ByteArray (const neuria::ByteArray&)>;
 	using FetchAnswerRedirector = boost::function<
-		nr::ByteArray (const nr::ByteArray&)>;	
+		neuria::ByteArray (const neuria::ByteArray&)>;	
 	using OnReceiveFetchAnswerFunc = boost::function<
-		void (nr::ntw::Session::Pointer, const nr::ByteArray&)>;
+		void (neuria::network::Session::Pointer, const neuria::ByteArray&)>;
 
 	static auto Create(
-			const cmd::CommandId& command_id, 
-			const nr::NodeId& node_id, 
-			nr::ntw::SessionPool::Pointer to_session_pool,
+			const command::CommandId& command_id, 
+			const neuria::network::NodeId& node_id, 
+			neuria::network::SessionPool::Pointer to_session_pool,
 			std::ostream& os) -> Pointer {
 		return Pointer(
 			new FetchBehavior(
@@ -41,7 +41,7 @@ public:
 				this->shared_from_this(), _1, _2));
 	}
 
-	auto Bind(nr::ntw::Client::Pointer client) -> void {
+	auto Bind(neuria::network::Client::Pointer client) -> void {
 		this->client = client;
 	}
 
@@ -62,15 +62,15 @@ public:
 	}
 
 private:
-	FetchBehavior(const cmd::CommandId& command_id, const nr::NodeId& node_id, 
-		nr::ntw::SessionPool::Pointer to_session_pool, std::ostream& os) 
+	FetchBehavior(const command::CommandId& command_id, const neuria::network::NodeId& node_id, 
+		neuria::network::SessionPool::Pointer to_session_pool, std::ostream& os) 
 		: command_id(command_id()), node_id(node_id), 
 		to_session_pool(to_session_pool), os(os){}
 
 
-	auto OnReceiveFetchCommand(nr::ntw::Session::Pointer session, 
-			const nr::ByteArray& byte_array) -> void {
-		auto fetch_command = cmd::FetchCommand::Parse(byte_array);
+	auto OnReceiveFetchCommand(neuria::network::Session::Pointer session, 
+			const neuria::ByteArray& byte_array) -> void {
+		auto fetch_command = command::FetchCommand::Parse(byte_array);
 		fetch_command.AddRoute(this->node_id);
 		if(fetch_command.IsReturnBackToStart(this->node_id)){ //When Finished
 			this->os << "on receive finished answer." << std::endl;
@@ -81,12 +81,12 @@ private:
 			if(fetch_command.IsAnswer()){ //When Answer
 				this->os << "on receive fetch answer." << std::endl;
 				std::cout << fetch_command << std::endl;
-				nr::ntw::Send(this->client,
+				neuria::network::Send(this->client,
 					fetch_command.GetOneStepCloserNodeId(this->node_id),	
-					cmd::DispatchCommand(
+					command::DispatchCommand(
 						this->command_id,
-						cmd::FetchCommand(
-							cmd::IsAnswer(true), fetch_command.GetRoute(), 
+						command::FetchCommand(
+							command::IsAnswer(true), fetch_command.GetRoute(), 
 							this->fetch_answer_redirector(
 								fetch_command.GetWrappedByteArray())
 						).Serialize()
@@ -101,14 +101,14 @@ private:
 				auto redirect_byte_array = 
 					this->fetch_query_redirector(fetch_command.GetWrappedByteArray());
 				this->at_random_selector(*to_session_pool)->Send(
-					cmd::DispatchCommand(
+					command::DispatchCommand(
 						this->command_id,
-						cmd::FetchCommand(
+						command::FetchCommand(
 							is_answer, fetch_command.GetRoute(), 
 							redirect_byte_array
 						).Serialize()
 					).Serialize(),
-					[](nr::ntw::Session::Pointer){}
+					[](neuria::network::Session::Pointer){}
 				);
 			}
 		}
@@ -118,12 +118,12 @@ private:
 	FetchQueryRedirector fetch_query_redirector;
 	FetchAnswerRedirector fetch_answer_redirector;
 	OnReceiveFetchAnswerFunc on_receive_fetch_answer_func;
-	nr::utl::RandomElementSelector at_random_selector;
-	nr::ntw::Client::Pointer client;
+	neuria::utility::RandomElementSelector at_random_selector;
+	neuria::network::Client::Pointer client;
 	
-	cmd::CommandId::WrappedType command_id;
-	nr::NodeId node_id;
-	nr::ntw::SessionPool::Pointer to_session_pool;
+	command::CommandId::WrappedType command_id;
+	neuria::network::NodeId node_id;
+	neuria::network::SessionPool::Pointer to_session_pool;
 	std::ostream& os;
 };
 

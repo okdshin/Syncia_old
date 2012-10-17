@@ -10,55 +10,55 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include "../neuria/Neuria.h"
-#include "../neuria/database/DataBase.h"
+#include "../database/DataBase.h"
 #include "Common.h"
 
-namespace sy{
-namespace cmd{
+namespace syncia{
+namespace command{
 
 class IsAnswerType{};
-using IsAnswer = nr::utl::TypeWrapper<bool, IsAnswerType>;
+using IsAnswer = neuria::utility::TypeWrapper<bool, IsAnswerType>;
 
 const auto QUERY = IsAnswer(false);
 const auto ANSWER = IsAnswer(true);
 
 class FetchCommand {
 public:
-	using Route = std::vector<nr::NodeId>;
+	using Route = std::vector<neuria::network::NodeId>;
 
 	FetchCommand(){}
-	FetchCommand(const IsAnswer& is_answer, const Route& route, const nr::ByteArray& wrapped_byte_array) 
+	FetchCommand(const IsAnswer& is_answer, const Route& route, const neuria::ByteArray& wrapped_byte_array) 
 		: is_answer(is_answer()), route_node_id_list(route), 
 		byte_array(wrapped_byte_array){}
 
-	static auto Parse(const nr::ByteArray& byte_array) -> FetchCommand {
-		std::stringstream ss(nr::utl::ByteArray2String(byte_array));
+	static auto Parse(const neuria::ByteArray& byte_array) -> FetchCommand {
+		std::stringstream ss(neuria::utility::ByteArray2String(byte_array));
 		boost::archive::text_iarchive ia(ss);
 		auto command = FetchCommand();
 		ia >> command;
 		return command;
 	}
 	
-	auto Serialize() const -> nr::ByteArray {
+	auto Serialize() const -> neuria::ByteArray {
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
 		oa << static_cast<const FetchCommand&>(*this);
-		return nr::utl::String2ByteArray(ss.str());
+		return neuria::utility::String2ByteArray(ss.str());
 	}
 	
 	auto IsAnswer() -> bool { return is_answer; }
-	auto AddRoute(const nr::NodeId& node_id) -> void {
+	auto AddRoute(const neuria::network::NodeId& node_id) -> void {
 		this->route_node_id_list.push_back(node_id);
 	}
 	auto GetRoute()const -> Route { return route_node_id_list; }
 
-	auto GetWrappedByteArray() -> nr::ByteArray { return byte_array; }
+	auto GetWrappedByteArray() -> neuria::ByteArray { return byte_array; }
 
-	auto IsReturnBackToStart(const nr::NodeId& node_id) -> bool {
+	auto IsReturnBackToStart(const neuria::network::NodeId& node_id) -> bool {
 		return this->is_answer && route_node_id_list.front() == node_id;	
 	}
 
-	auto GetOneStepCloserNodeId(const nr::NodeId& node_id) -> nr::NodeId {
+	auto GetOneStepCloserNodeId(const neuria::network::NodeId& node_id) -> neuria::network::NodeId {
 		auto self_iter = std::find(this->route_node_id_list.begin(), 
 			this->route_node_id_list.end(), node_id);
 		assert("not found self node id in route." 
@@ -81,14 +81,14 @@ private:
 
 	bool is_answer;
 	Route route_node_id_list;
-	nr::ByteArray byte_array;
+	neuria::ByteArray byte_array;
 };
 
 auto operator<<(std::ostream& os, 
 		const FetchCommand& command) -> std::ostream& {
 	os << "is answer:" << command.is_answer;
 	std::copy(command.route_node_id_list.begin(), 
-		command.route_node_id_list.end(), std::ostream_iterator<nr::NodeId>(os, " "));
+		command.route_node_id_list.end(), std::ostream_iterator<neuria::network::NodeId>(os, " "));
 	os << "\n";
 	std::copy(command.byte_array.begin(), 
 		command.byte_array.end(), std::ostream_iterator<char>(os, ""));

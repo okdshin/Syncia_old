@@ -2,7 +2,7 @@
 #include "FetchAction.h"
 #include <iostream>
 
-using namespace sy;
+using namespace syncia;
 
 int main(int argc, char* argv[])
 {

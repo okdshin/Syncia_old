@@ -10,36 +10,36 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include "../neuria/Neuria.h"
-#include "../neuria/database/DataBase.h"
+#include "../database/DataBase.h"
 #include "Common.h"
 
-namespace sy{
-namespace cmd{
+namespace syncia{
+namespace command{
 
 
 class LinkCommand {
 public:
 	LinkCommand(){}
-	LinkCommand(const nr::NodeId& node_id, const nr::ByteArray& wrapped_byte_array) 
+	LinkCommand(const neuria::network::NodeId& node_id, const neuria::ByteArray& wrapped_byte_array) 
 		: node_id(node_id), byte_array(wrapped_byte_array){}
 
-	static auto Parse(const nr::ByteArray& byte_array) -> LinkCommand {
-		std::stringstream ss(nr::utl::ByteArray2String(byte_array));
+	static auto Parse(const neuria::ByteArray& byte_array) -> LinkCommand {
+		std::stringstream ss(neuria::utility::ByteArray2String(byte_array));
 		boost::archive::text_iarchive ia(ss);
 		auto command = LinkCommand();
 		ia >> command;
 		return command;
 	}
 	
-	auto Serialize() const -> nr::ByteArray {
+	auto Serialize() const -> neuria::ByteArray {
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
 		oa << static_cast<const LinkCommand&>(*this);
-		return nr::utl::String2ByteArray(ss.str());
+		return neuria::utility::String2ByteArray(ss.str());
 	}
 	
-	auto GetNodeId()const -> nr::NodeId { return node_id; }
-	auto GetWrappedByteArray()const -> nr::ByteArray { return byte_array; }
+	auto GetNodeId()const -> neuria::network::NodeId { return node_id; }
+	auto GetWrappedByteArray()const -> neuria::ByteArray { return byte_array; }
 
 private:
 	friend class boost::serialization::access;
@@ -51,8 +51,8 @@ private:
 	friend
 	auto operator<<(std::ostream& os, const LinkCommand& command) -> std::ostream&;
 
-	nr::NodeId node_id;
-	nr::ByteArray byte_array;
+	neuria::network::NodeId node_id;
+	neuria::ByteArray byte_array;
 };
 
 auto operator<<(std::ostream& os, 

@@ -9,25 +9,25 @@
 #include "command/Command.h"
 #include "FetchAction.h"
 
-namespace sy
+namespace syncia
 {
 
 class SpreadKeyHashAction{
 public:
 	using Pointer = boost::shared_ptr<SpreadKeyHashAction>;
 
-	static auto Create(nr::ntw::SessionPool::Pointer to_session_pool, 
-			const nr::NodeId& node_id, std::ostream& os) -> Pointer { 
+	static auto Create(neuria::network::SessionPool::Pointer to_session_pool, 
+			const neuria::network::NodeId& node_id, std::ostream& os) -> Pointer { 
 		auto fetch_action = 
 			FetchAction::Create(
-				cmd::GetCommandId<cmd::SpreadKeyHashCommand>(), 
+				command::GetCommandId<command::SpreadKeyHashCommand>(), 
 				to_session_pool, node_id, os);
 		return Pointer(new SpreadKeyHashAction(fetch_action, os));
 	}
 
 	auto RequestSpreadKeyHash() -> void {
 		this->os << "request spread key hash" << std::endl;
-		this->fetch_action->Fetch(cmd::SpreadKeyHashCommand().Serialize());	
+		this->fetch_action->Fetch(command::SpreadKeyHashCommand().Serialize());	
 	}
 
 private:

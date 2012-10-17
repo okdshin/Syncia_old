@@ -5,8 +5,8 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
-using namespace sy;
-using namespace sy::cmd;
+using namespace syncia;
+using namespace syncia::command;
 
 template<class Type>
 void TestSerialize(const Type& target)

@@ -7,8 +7,9 @@
 #include "neuria/Neuria.h"
 #include "command/Command.h"
 #include "BehaviorDispatcher.h"
+#include "FileSystemPath.h"
 
-namespace sy
+namespace syncia
 {
 
 class RequestFileBehavior :
@@ -16,7 +17,7 @@ class RequestFileBehavior :
 public:
 	using Pointer = boost::shared_ptr<RequestFileBehavior>;
     using FilePathFetcher = boost::function<
-		nr::FileSystemPath (const nr::db::HashId&)>;
+		FileSystemPath (const database::HashId&)>;
 
 	static auto Create(int buffer_size, FilePathFetcher file_fetcher, 
 			std::ostream& os) -> Pointer {
@@ -24,7 +25,7 @@ public:
 	}
 	
 	auto Bind(BehaviorDispatcher::Pointer dispatcher) -> void {
-		dispatcher->RegisterFunc(cmd::GetCommandId<cmd::RequestFileQueryCommand>(),
+		dispatcher->RegisterFunc(command::GetCommandId<command::RequestFileQueryCommand>(),
 			boost::bind(&RequestFileBehavior::OnReceiveRequestFileQuery, 
 				this->shared_from_this(), _1, _2));
 	}
@@ -34,14 +35,14 @@ private:
 		std::ostream& os) 
 		:buffer_size(buffer_size), file_fetcher(file_fetcher), os(os){}
 
-	auto OnReceiveRequestFileQuery(nr::ntw::Session::Pointer session,
-			const nr::ByteArray& byte_array) -> void {
-		auto command = cmd::RequestFileQueryCommand::Parse(byte_array);	
+	auto OnReceiveRequestFileQuery(neuria::network::Session::Pointer session,
+			const neuria::ByteArray& byte_array) -> void {
+		auto command = command::RequestFileQueryCommand::Parse(byte_array);	
 		auto file_path = this->file_fetcher(command.GetRequestHashId());
-		auto file_byte_array = nr::db::SerializeFile(file_path, this->buffer_size);
-		session->Send(cmd::RequestFileAnswerCommand(
+		auto file_byte_array = database::SerializeFile(file_path, this->buffer_size);
+		session->Send(command::RequestFileAnswerCommand(
 			file_path, file_byte_array).Serialize(), 
-			[](nr::ntw::Session::Pointer session){
+			[](neuria::network::Session::Pointer session){
 				session->Close();	
 			});
 	}

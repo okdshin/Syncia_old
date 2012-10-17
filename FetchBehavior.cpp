@@ -4,7 +4,7 @@
 #include "LinkAction.h"
 #include "LinkBehavior.h"
 #include "CommandToRandomNodeAction.h"
-#include "neuria/utility/Shell.h"
+#include "neuria/test/CuiShell.h"
 
 using namespace sy;
 
@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
 	
 	link_action->Bind(client);
 
-	auto shell = nr::utl::Shell(std::cout);
+	auto shell = nr::test::CuiShell(std::cout);
 	nr::utl::RegisterExitFunc(shell);
 	shell.Register("link", ": create new link.", 
 		[link_action](const nr::utl::Shell::ArgumentList& argument_list){

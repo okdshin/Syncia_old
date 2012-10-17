@@ -2,7 +2,7 @@
 #include "Syncia.h"
 #include <iostream>
 
-using namespace sy;
+using namespace syncia;
 
 int main(int argc, char* argv[])
 {
@@ -22,73 +22,73 @@ int main(int argc, char* argv[])
 
 	std::stringstream no_output;
 	
-	auto server = nr::ntw::SocketServer::Create(
+	auto server = neuria::network::SocketServer::Create(
 		service, local_port, buffer_size, std::cout);
 	auto dispatcher = BehaviorDispatcher::Create(service, std::cout);
 	SetOnReceiveFuncOnly(server, dispatcher->GetOnReceiveFunc());
 
-	auto client = nr::ntw::SocketClient::Create(service, buffer_size, std::cout);
+	auto client = neuria::network::SocketClient::Create(service, buffer_size, std::cout);
 	
-	auto node_id = nr::utl::CreateSocketNodeId("127.0.0.1", local_port);
+	auto node_id = neuria::network::CreateSocketNodeId("127.0.0.1", local_port);
 	
-	auto upper_session_pool = nr::ntw::SessionPool::Create();
-	auto lower_session_pool = nr::ntw::SessionPool::Create();
-	auto file_db = nr::db::FileKeyHashDb::Create(0.3, buffer_size, std::cout);
+	auto upper_session_pool = neuria::network::SessionPool::Create();
+	auto lower_session_pool = neuria::network::SessionPool::Create();
+	auto file_db = database::FileKeyHashDb::Create(0.3, buffer_size, std::cout);
 	auto syncia = Syncia::Create(
 		max_key_hash_count, spread_key_hash_max_count, max_hop_count, buffer_size, 
 		upper_session_pool, lower_session_pool, file_db, node_id, std::cout);
 	syncia->Bind(client);
 	syncia->Bind(dispatcher);
 
-	auto shell = nr::utl::Shell(std::cout);
-	nr::utl::RegisterExitFunc(shell);
+	auto shell = neuria::test::CuiShell(std::cout);
+	neuria::test::RegisterExitFunc(shell);
 	
 	shell.Register("upload", ": upload directory.", 
-		[syncia](const nr::utl::Shell::ArgumentList& argument_list){
-			syncia->UploadDirectory(nr::FileSystemPath(argument_list.at(1)));
+		[syncia](const neuria::test::CuiShell::ArgList& argument_list){
+			//syncia->UploadDirectory(FileSystemPath(argument_list.at(1)));
 		});
 	shell.Register("db", ": show uploaded files.", 
-		[file_db](const nr::utl::Shell::ArgumentList& argument_list){
+		[file_db](const neuria::test::CuiShell::ArgList& argument_list){
 			std::cout << file_db << std::endl;
 		});
 	shell.Register("link", ": create new search link.", 
-		[syncia](const nr::utl::Shell::ArgumentList& argument_list){
+		[syncia](const neuria::test::CuiShell::ArgList& argument_list){
 			syncia->CreateSearchLink(
-				nr::utl::CreateSocketNodeId(
+				neuria::network::CreateSocketNodeId(
 					argument_list.at(1), 
 					boost::lexical_cast<int>(argument_list.at(2))
 				)
 			);
 		});
 	shell.Register("search", ": search key hash.", 
-		[syncia](const nr::utl::Shell::ArgumentList& argument_list){
-			auto keyward_only = nr::utl::Shell::ArgumentList();
+		[syncia](const neuria::test::CuiShell::ArgList& argument_list){
+			auto keyward_only = neuria::test::CuiShell::ArgList();
 			std::copy(argument_list.begin()+1, argument_list.end(), 
 				std::back_inserter(keyward_only));
-			syncia->SearchKeyHash(nr::db::KeywardList(keyward_only));
+			syncia->SearchKeyHash(database::KeywardList(keyward_only));
 		});
 	
 	shell.Register("spread", ": request spread key hash.", 
-		[syncia](const nr::utl::Shell::ArgumentList& argument_list){
+		[syncia](const neuria::test::CuiShell::ArgList& argument_list){
 			syncia->RequestSpreadKeyHash();
 		});
 	
 	shell.Register("request", ": request file.", 
-		[syncia](const nr::utl::Shell::ArgumentList& argument_list){
-			syncia->RequestFile(nr::db::HashId(argument_list.at(3)),
-				nr::utl::CreateSocketNodeId(
+		[syncia](const neuria::test::CuiShell::ArgList& argument_list){
+			syncia->RequestFile(database::HashId(argument_list.at(3)),
+				neuria::network::CreateSocketNodeId(
 					argument_list.at(1), 
 					boost::lexical_cast<int>(argument_list.at(2))),
-				nr::FileSystemPath(argument_list.at(4))
+				FileSystemPath(argument_list.at(4))
 			);
 		});
 	
 	shell.Register("upper", ": show upper linked sessions.", 
-		[upper_session_pool](const nr::utl::Shell::ArgumentList& argument_list){
+		[upper_session_pool](const neuria::test::CuiShell::ArgList& argument_list){
 			std::cout << "upper session: " << upper_session_pool << std::endl;
 		});
 	shell.Register("lower", ": show lower linked sessions.", 
-		[lower_session_pool](const nr::utl::Shell::ArgumentList& argument_list){
+		[lower_session_pool](const neuria::test::CuiShell::ArgList& argument_list){
 			std::cout << "lower session: " << lower_session_pool << std::endl;
 		});
 	

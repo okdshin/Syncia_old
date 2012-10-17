@@ -10,12 +10,12 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include "../neuria/Neuria.h"
-#include "../neuria/database/DataBase.h"
+#include "../database/DataBase.h"
 #include "Common.h"
 #include "SearchKeyHashCommandData.h"
 
-namespace sy{
-namespace cmd{
+namespace syncia{
+namespace command{
 
 using StrList = std::vector<std::string>;
 

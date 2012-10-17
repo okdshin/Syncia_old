@@ -10,35 +10,36 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include "../neuria/Neuria.h"
+#include "../database/DataBase.h"
 #include "Common.h"
 
-namespace sy{
-namespace cmd{
+namespace syncia{
+namespace command{
 
 class SpreadKeyHashCommand {
 public:
 	SpreadKeyHashCommand(){}
 
-	static auto Parse(const nr::ByteArray& byte_array) -> SpreadKeyHashCommand {
-		std::stringstream ss(nr::utl::ByteArray2String(byte_array));
+	static auto Parse(const neuria::ByteArray& byte_array) -> SpreadKeyHashCommand {
+		std::stringstream ss(neuria::utility::ByteArray2String(byte_array));
 		boost::archive::text_iarchive ia(ss);
 		auto command = SpreadKeyHashCommand();
 		ia >> command;
 		return command;
 	}
 	
-	auto Serialize() const -> nr::ByteArray {
+	auto Serialize() const -> neuria::ByteArray {
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
 		oa << static_cast<const SpreadKeyHashCommand&>(*this);
-		return nr::utl::String2ByteArray(ss.str());
+		return neuria::utility::String2ByteArray(ss.str());
 	}
 
-	auto GetSpreadKeyHashList() const -> nr::db::FileKeyHashList {
+	auto GetSpreadKeyHashList() const -> database::FileKeyHashList {
 		return spread_key_hash_list; }
 
 	auto AddSpreadKeyHashList(
-			const nr::db::FileKeyHashList& spread_key_hash_list) -> void {
+			const database::FileKeyHashList& spread_key_hash_list) -> void {
 		std::copy(spread_key_hash_list.begin(), spread_key_hash_list.end(), 
 			std::back_inserter(this->spread_key_hash_list));
 	}
@@ -50,7 +51,7 @@ private:
 		ar & spread_key_hash_list;
 	}
 
-	nr::db::FileKeyHashList spread_key_hash_list;
+	database::FileKeyHashList spread_key_hash_list;
 	
 };
 
@@ -59,7 +60,7 @@ auto operator<<(std::ostream& os,
 	auto key_hash_list = command.GetSpreadKeyHashList();
 	os << "KeyHashList:";
 	std::copy(key_hash_list.begin(), key_hash_list.end(), 
-		std::ostream_iterator<nr::db::FileKeyHash>(os, " "));
+		std::ostream_iterator<database::FileKeyHash>(os, " "));
 	return os;
 }
 

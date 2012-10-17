@@ -6,36 +6,36 @@
 #include "../neuria/Neuria.h"
 #include "Common.h"
 
-namespace sy{
-namespace cmd{
+namespace syncia{
+namespace command{
 
 class RequestFileAnswerCommand{
 public:
     RequestFileAnswerCommand(){}
     RequestFileAnswerCommand(const boost::filesystem::path& file_path, 
-			const nr::ByteArray& file_byte_array) 
+			const neuria::ByteArray& file_byte_array) 
 		: file_path_str(file_path.string()), file_byte_array(file_byte_array){}
 
-	static auto Parse(const nr::ByteArray& byte_array) -> RequestFileAnswerCommand {
-		std::stringstream ss(nr::utl::ByteArray2String(byte_array));
+	static auto Parse(const neuria::ByteArray& byte_array) -> RequestFileAnswerCommand {
+		std::stringstream ss(neuria::utility::ByteArray2String(byte_array));
 		boost::archive::text_iarchive ia(ss);
 		auto command = RequestFileAnswerCommand();
 		ia >> command;
 		return command;
 	}
 	
-	auto Serialize() const -> nr::ByteArray {
+	auto Serialize() const -> neuria::ByteArray {
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
 		oa << static_cast<const RequestFileAnswerCommand&>(*this);
-		return nr::utl::String2ByteArray(ss.str());
+		return neuria::utility::String2ByteArray(ss.str());
 	}
 
 	auto GetFilePath() const -> boost::filesystem::path { 
 		return boost::filesystem::path(file_path_str); 
 	}
 
-	auto GetFileByteArray() const -> nr::ByteArray { return file_byte_array; }
+	auto GetFileByteArray() const -> neuria::ByteArray { return file_byte_array; }
 
 private:
 	friend class boost::serialization::access;
@@ -45,7 +45,7 @@ private:
 	}
 	
 	std::string file_path_str;
-	nr::ByteArray file_byte_array;
+	neuria::ByteArray file_byte_array;
 };
 
 auto operator<<(std::ostream& os,

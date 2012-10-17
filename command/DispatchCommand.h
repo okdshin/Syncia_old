@@ -9,35 +9,35 @@
 #include <boost/archive/text_iarchive.hpp>
 #include "../neuria/Neuria.h"
 
-namespace sy{
-namespace cmd{
+namespace syncia{
+namespace command{
 
 class CommandIdType{};
-using CommandId = nr::utl::TypeWrapper<std::string, CommandIdType>;
+using CommandId = neuria::utility::TypeWrapper<std::string, CommandIdType>;
 
 class DispatchCommand{
 public: 
 	DispatchCommand(){}
-	DispatchCommand(const CommandId& command_id, const nr::ByteArray& byte_array)
+	DispatchCommand(const CommandId& command_id, const neuria::ByteArray& byte_array)
 		: command_id_str(command_id()), byte_array(byte_array){}
 
-	static auto Parse(const nr::ByteArray& byte_array) -> DispatchCommand {
-		std::stringstream ss(nr::utl::ByteArray2String(byte_array));
+	static auto Parse(const neuria::ByteArray& byte_array) -> DispatchCommand {
+		std::stringstream ss(neuria::utility::ByteArray2String(byte_array));
 		boost::archive::text_iarchive ia(ss);
 		auto command = DispatchCommand();
 		ia >> command;
 		return command;
 	}
 	
-	auto Serialize()const -> nr::ByteArray {
+	auto Serialize()const -> neuria::ByteArray {
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
 		oa << static_cast<const DispatchCommand&>(*this);
-		return nr::utl::String2ByteArray(ss.str());	
+		return neuria::utility::String2ByteArray(ss.str());	
 	}
 
 	auto GetCommandId()const -> CommandId { return CommandId(command_id_str); }
-	auto GetWrappedByteArray()const -> nr::ByteArray { return byte_array; }
+	auto GetWrappedByteArray()const -> neuria::ByteArray { return byte_array; }
 
 private:
 	friend class boost::serialization::access;
@@ -47,12 +47,12 @@ private:
 	}
 
 	std::string command_id_str;
-	nr::ByteArray byte_array;
+	neuria::ByteArray byte_array;
 };
 
 auto operator<<(std::ostream& os, const DispatchCommand& command) -> std::ostream& {
 	os << "command_id:" << command.GetCommandId()() << " byte_array:" 
-		<< nr::utl::ByteArray2String(command.GetWrappedByteArray()) << std::endl;
+		<< neuria::utility::ByteArray2String(command.GetWrappedByteArray()) << std::endl;
 	return os;
 }
 

@@ -2,7 +2,8 @@
 #include "RequestFileAnswerCommand.h"
 #include <iostream>
 
-using namespace sy;
+using namespace syncia;
+using namespace syncia::command;
 
 int main(int argc, char* argv[])
 {

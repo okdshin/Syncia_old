@@ -9,8 +9,8 @@
 #include "SpreadKeyHashCommand.h"
 #include "LinkForFetchKeyHashCommand.h"
 
-namespace sy{
-namespace cmd{
+namespace syncia{
+namespace command{
 
 
 }

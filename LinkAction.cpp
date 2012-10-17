@@ -3,9 +3,9 @@
 #include <iostream>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
-#include "neuria/utility/Shell.h"
+#include "neuria/test/CuiShell.h"
 
-using namespace sy;
+using namespace syncia;
 
 void TestCuiApp(int argc, char* argv[]){
 	boost::asio::io_service service;
@@ -13,11 +13,11 @@ void TestCuiApp(int argc, char* argv[]){
 	boost::thread t(boost::bind(&boost::asio::io_service::run, &service));
 
 	const int buffer_size = 128;
-	auto client = nr::ntw::SocketClient::Create(service, buffer_size, std::cout);
+	auto client = neuria::network::SocketClient::Create(service, buffer_size, std::cout);
 	
-	auto connected_pool = nr::ntw::SessionPool::Create();
+	auto connected_pool = neuria::network::SessionPool::Create();
 	auto link_action = LinkAction::Create(
-		cmd::CommandId("test link query command"), connected_pool, node_id, std::cout);
+		command::CommandId("test link query command"), connected_pool, node_id, std::cout);
 	
 	link_action->Bind(client);
 

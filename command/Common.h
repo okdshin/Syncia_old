@@ -3,8 +3,8 @@
 #include <iostream>
 #include "DispatchCommand.h"
 
-namespace sy{
-namespace cmd{
+namespace syncia{
+namespace command{
 
 template<class Command>
 auto GetCommandId() -> CommandId {

@@ -5,8 +5,8 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
-using namespace sy;
-using namespace sy::cmd;
+using namespace syncia;
+using namespace syncia::command;
 
 template<class Type>
 void TestSerialize(const Type& target)
@@ -27,14 +27,14 @@ void TestSerialize(const Type& target)
 
 int main(int argc, char* argv[])
 {
-	auto command = FetchCommand(false, nr::utl::String2ByteArray("hello"));
-	command.AddRoute(nr::NodeId("nodeid1"));
-	command.AddRoute(nr::NodeId("nodeid2"));
+	auto command = FetchCommand(false, neuria::utility::String2ByteArray("hello"));
+	command.AddRoute(neuria::network::NodeId("nodeid1"));
+	command.AddRoute(neuria::network::NodeId("nodeid2"));
 	/*
 	command.AddFindKeyHashList({nr::db::FileKeyHash(
 		nr::db::FileKeyHash::HashId("hash_id"), 
 		nr::db::FileKeyHash::Keyward("keyward"), 
-		nr::NodeId("owner_id"), boost::filesystem::path("./"))});
+		neuria::network::NodeId("owner_id"), boost::filesystem::path("./"))});
 	command.AddRouteNodeId("owner_id");
 	//TestSerialize(command);
 	*/

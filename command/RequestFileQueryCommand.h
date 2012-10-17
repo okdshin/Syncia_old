@@ -4,32 +4,33 @@
 #include <string>
 #include "../neuria/Neuria.h"
 #include "Common.h"
+#include "../database/DataBase.h"
 
-namespace sy{
-namespace cmd{
+namespace syncia{
+namespace command{
 
 class RequestFileQueryCommand{
 public:
     RequestFileQueryCommand(){}
-    RequestFileQueryCommand(const nr::db::HashId& hash_id) 
+    RequestFileQueryCommand(const database::HashId& hash_id) 
 		: hash_id(hash_id()){}
 
-	static auto Parse(const nr::ByteArray& byte_array) -> RequestFileQueryCommand {
-		std::stringstream ss(nr::utl::ByteArray2String(byte_array));
+	static auto Parse(const neuria::ByteArray& byte_array) -> RequestFileQueryCommand {
+		std::stringstream ss(neuria::utility::ByteArray2String(byte_array));
 		boost::archive::text_iarchive ia(ss);
 		auto command = RequestFileQueryCommand();
 		ia >> command;
 		return command;
 	}
 	
-	auto Serialize() const -> nr::ByteArray {
+	auto Serialize() const -> neuria::ByteArray {
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
 		oa << static_cast<const RequestFileQueryCommand&>(*this);
-		return nr::utl::String2ByteArray(ss.str());
+		return neuria::utility::String2ByteArray(ss.str());
 	}
 
-	auto GetRequestHashId() const -> nr::db::HashId { return nr::db::HashId(hash_id); }
+	auto GetRequestHashId() const -> database::HashId { return database::HashId(hash_id); }
 
 private:
 	friend class boost::serialization::access;
@@ -38,7 +39,7 @@ private:
 		ar & hash_id;
 	}
 	
-	nr::db::HashId::WrappedType hash_id;;
+	database::HashId::WrappedType hash_id;;
 };
 
 auto operator<<(std::ostream& os,

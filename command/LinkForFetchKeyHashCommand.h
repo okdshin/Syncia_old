@@ -12,26 +12,26 @@
 #include "../neuria/Neuria.h"
 #include "Common.h"
 
-namespace sy{
-namespace cmd{
+namespace syncia{
+namespace command{
 
 class LinkForFetchKeyHashCommand {
 public:
 	LinkForFetchKeyHashCommand(){}
 	
-	static auto Parse(const nr::ByteArray& byte_array) -> LinkForFetchKeyHashCommand {
-		std::stringstream ss(nr::utl::ByteArray2String(byte_array));
+	static auto Parse(const neuria::ByteArray& byte_array) -> LinkForFetchKeyHashCommand {
+		std::stringstream ss(neuria::utility::ByteArray2String(byte_array));
 		boost::archive::text_iarchive ia(ss);
 		auto command = LinkForFetchKeyHashCommand();
 		ia >> command;
 		return command;
 	}
 	
-	auto Serialize() const -> nr::ByteArray {
+	auto Serialize() const -> neuria::ByteArray {
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
 		oa << static_cast<const LinkForFetchKeyHashCommand&>(*this);
-		return nr::utl::String2ByteArray(ss.str());
+		return neuria::utility::String2ByteArray(ss.str());
 	}
 
 private:

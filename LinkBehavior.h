@@ -5,7 +5,7 @@
 #include "command/Command.h"
 #include "BehaviorDispatcher.h"
 
-namespace sy
+namespace syncia
 {
 
 class LinkBehavior :
@@ -13,13 +13,13 @@ class LinkBehavior :
 public:
 	using Pointer = boost::shared_ptr<LinkBehavior>;
 	
-	static auto Create(const nr::ntw::SessionPool::Pointer& pool, 
-			const cmd::CommandId& link_command_id,
+	static auto Create(const neuria::network::SessionPool::Pointer& pool, 
+			const command::CommandId& link_command_id,
 			std::ostream& os) -> Pointer {
 		return Pointer(new LinkBehavior(pool, link_command_id, os));
 	}
 
-	auto SetOnReceiveLinkQueryFunc(nr::ntw::Session::OnReceiveFunc func) -> void {
+	auto SetOnReceiveLinkQueryFunc(neuria::network::Session::OnReceiveFunc func) -> void {
 		this->on_receive_link_query_func = func;
 	}
 
@@ -29,30 +29,30 @@ public:
 				this->shared_from_this(), _1, _2));
 	}
 
-	auto Bind(nr::ntw::Client::Pointer client) -> void {
+	auto Bind(neuria::network::Client::Pointer client) -> void {
 		this->client = client;	
 	}
 
 private:
-    LinkBehavior(nr::ntw::SessionPool::Pointer pool, 
-			const cmd::CommandId& link_command_id, 
+    LinkBehavior(neuria::network::SessionPool::Pointer pool, 
+			const command::CommandId& link_command_id, 
 			std::ostream& os) 
 		: pool(pool), link_command_id(link_command_id), os(os){}
 	
-	auto OnReceiveLinkQuery(nr::ntw::Session::Pointer session, 
-			const nr::ByteArray& byte_array) -> void {
+	auto OnReceiveLinkQuery(neuria::network::Session::Pointer session, 
+			const neuria::ByteArray& byte_array) -> void {
 		this->os << "on receive link query." << std::endl;
-		auto command = cmd::LinkCommand::Parse(byte_array);
+		auto command = command::LinkCommand::Parse(byte_array);
 		std::cout << "LowerNodeId:" << command.GetNodeId() << std::endl;
-		nr::ntw::Connect(this->client, command.GetNodeId(), this->pool, 
-			[](nr::ntw::Session::Pointer, const nr::ByteArray&){});
+		neuria::network::Connect(this->client, command.GetNodeId(), this->pool, 
+			[](neuria::network::Session::Pointer, const neuria::ByteArray&){});
 		this->on_receive_link_query_func(session, command.GetWrappedByteArray());
 	}
 
-	nr::ntw::Session::OnReceiveFunc on_receive_link_query_func;
-	nr::ntw::SessionPool::Pointer pool;
-	nr::ntw::Client::Pointer client;
-	cmd::CommandId link_command_id;
+	neuria::network::Session::OnReceiveFunc on_receive_link_query_func;
+	neuria::network::SessionPool::Pointer pool;
+	neuria::network::Client::Pointer client;
+	command::CommandId link_command_id;
 	std::ostream& os;
 };
 

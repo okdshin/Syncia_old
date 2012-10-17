@@ -9,27 +9,27 @@
 #include "command/Command.h"
 #include "FetchAction.h"
 
-namespace sy
+namespace syncia
 {
 
 class SearchKeyHashAction{
 public:
 	using Pointer = boost::shared_ptr<SearchKeyHashAction>;
 
-	static auto Create(nr::ntw::SessionPool::Pointer to_session_pool, 
-			const nr::NodeId& node_id, std::ostream& os) -> Pointer { 
+	static auto Create(neuria::network::SessionPool::Pointer to_session_pool, 
+			const neuria::network::NodeId& node_id, std::ostream& os) -> Pointer { 
 		auto fetch_action = 
-			FetchAction::Create(cmd::GetCommandId<cmd::SearchKeyHashCommand>(), 
+			FetchAction::Create(command::GetCommandId<command::SearchKeyHashCommand>(), 
 				to_session_pool, node_id, os);
 		return Pointer(new SearchKeyHashAction(fetch_action, os));
 	}
 
 	auto SearchKeyHash(
-			const nr::db::KeywardList& search_keyward_list) -> void {
+			const database::KeywardList& search_keyward_list) -> void {
 		assert(!search_keyward_list().empty());
 		this->os << "query search key hash" << std::endl;
 		this->fetch_action->Fetch(
-			cmd::SearchKeyHashCommand(search_keyward_list).Serialize());	
+			command::SearchKeyHashCommand(search_keyward_list).Serialize());	
 	}
 
 private:

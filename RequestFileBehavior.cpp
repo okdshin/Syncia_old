@@ -2,11 +2,11 @@
 #include "RequestFileBehavior.h"
 #include <iostream>
 
-using namespace sy;
+using namespace syncia;
 
 int main(int argc, char* argv[])
 {
-	std::cout << nr::utl::ByteArray2String(nr::db::SerializeFile("Syncia.out", 128)) << std::endl;
+	std::cout << neuria::utility::ByteArray2String(database::SerializeFile("Syncia.out", 128)) << std::endl;
 
     return 0;
 }

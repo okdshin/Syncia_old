@@ -5,8 +5,8 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
-using namespace sy;
-using namespace sy::cmd;
+using namespace syncia;
+using namespace syncia::command;
 
 template<class Type>
 void TestSerialize(const Type& target)
@@ -28,10 +28,10 @@ void TestSerialize(const Type& target)
 int main(int argc, char* argv[])
 {
 	auto command = SpreadKeyHashCommand();
-	command.AddSpreadKeyHashList({nr::db::FileKeyHash(
-		nr::db::HashId("hash_id"), 
-		nr::db::Keyward("keyward"), 
-		nr::NodeId("owner_id"), boost::filesystem::path("./"))});
+	command.AddSpreadKeyHashList({database::FileKeyHash(
+		database::HashId("hash_id"), 
+		database::Keyward("keyward"), 
+		neuria::network::NodeId("owner_id"), boost::filesystem::path("./"))});
 	std::cout << command << std::endl;
 	//TestSerialize(command);
 	auto byte_array = command.Serialize();

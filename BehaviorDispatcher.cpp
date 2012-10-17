@@ -2,14 +2,14 @@
 #include "BehaviorDispatcher.h"
 #include <iostream>
 
-using namespace sy;
+using namespace syncia;
 
 int main(int argc, char* argv[])
 {
 	boost::asio::io_service service;
 	boost::asio::io_service::work w(service);
 	boost::thread t(boost::bind(&boost::asio::io_service::run, &service));
-	auto server = nr::ntw::SocketServer::Create(service, 54321, 128, std::cout);
+	auto server = neuria::network::SocketServer::Create(service, 54321, 128, std::cout);
 	auto dispatcher = BehaviorDispatcher::Create(service, std::cout);
 	SetOnReceiveFuncOnly(server, dispatcher->GetOnReceiveFunc());
 	std::cout << dispatcher << std::endl;

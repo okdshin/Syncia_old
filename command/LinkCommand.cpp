@@ -5,8 +5,8 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
-using namespace sy;
-using namespace sy::cmd;
+using namespace syncia;
+using namespace syncia::command;
 
 template<class Type>
 void TestSerialize(const Type& target)
@@ -27,7 +27,7 @@ void TestSerialize(const Type& target)
 
 int main(int argc, char* argv[])
 {
-	auto command = LinkCommand(nr::utl::CreateSocketNodeId("localhost", 54321), nr::utl::String2ByteArray("[this is wrapped byte array]"));
+	auto command = LinkCommand(neuria::network::CreateSocketNodeId("localhost", 54321), neuria::utility::String2ByteArray("[this is wrapped byte array]"));
 	/*
 	command.AddFindKeyHashList({nr::db::FileKeyHash(
 		nr::db::FileKeyHash::HashId("hash_id"), 

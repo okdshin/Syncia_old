@@ -3,26 +3,27 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include "neuria/Neuria.h"
+#include "database/DataBase.h"
+#include "FileSystemPathList.h"
 
-namespace sy
+namespace syncia
 {
 
 class UploadAction : public boost::enable_shared_from_this<UploadAction> {
 public:
 	using Pointer = boost::shared_ptr<UploadAction>;
 
-	static auto Create(nr::db::FileKeyHashDb::Pointer file_db, 
-			const nr::NodeId& node_id, 
+	static auto Create(database::FileKeyHashDb::Pointer file_db, 
+			const neuria::network::NodeId& node_id, 
 			std::ostream& os) -> Pointer {	
 		return Pointer(new UploadAction(file_db, node_id, os));
 	}
 
-	auto UploadFile(const nr::db::Keyward& keyward, 
-			const nr::FileSystemPath& file_path) -> void {
-		std::cout << "SelfNodeId: " << this->node_id << std::endl;
-		this->file_db->Add(keyward, file_path, this->node_id);
+	auto UploadFile(const FileSystemPath& file_path) -> void {
+		this->file_db->Add(database::Keyward(file_path.filename().string()), 
+			file_path, this->node_id);
 	}
-	
+/*	
 	auto UploadDirectory(const nr::FileSystemPath& upload_directory_path) -> void {
 		const auto end = boost::filesystem::recursive_directory_iterator();
 		for(auto path_iter = boost::filesystem::recursive_directory_iterator(
@@ -34,16 +35,23 @@ public:
 			}
 		}
 	}
-
+*/
 private:
-    UploadAction(nr::db::FileKeyHashDb::Pointer file_db, const nr::NodeId& node_id,
+    UploadAction(database::FileKeyHashDb::Pointer file_db, const neuria::network::NodeId& node_id,
 			std::ostream& os)
 			: file_db(file_db), node_id(node_id), os(os){}
 	
-	nr::db::FileKeyHashDb::Pointer file_db;
-	nr::NodeId node_id;
+	database::FileKeyHashDb::Pointer file_db;
+	neuria::network::NodeId node_id;
 	std::ostream& os;
 };
-
+/*
+auto UploadManyFiles(UploadAction::Pointer upload_action, 
+		const FileSystemPathList& file_path_list) -> void {
+	for(const auto& file_path : file_path_list){
+		upload_action->UploadFile(file_path);
+	}
+}
+*/
 }
 

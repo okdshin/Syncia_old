@@ -8,7 +8,7 @@
 #include "neuria/Neuria.h"
 #include "command/DispatchCommand.h"
 
-namespace sy{
+namespace syncia{
 
 class BehaviorDispatcher : 
 		public boost::enable_shared_from_this<BehaviorDispatcher> {
@@ -18,13 +18,13 @@ public:
 		return Pointer(new BehaviorDispatcher(service, os));	
 	}
 	
-	auto RegisterFunc(const cmd::CommandId& command_id, 
-			nr::ntw::Session::OnReceiveFunc func) -> void{
+	auto RegisterFunc(const command::CommandId& command_id, 
+			neuria::network::Session::OnReceiveFunc func) -> void{
 		std::cout << "registered " << command_id << std::endl;
 		this->func_dict[command_id()] = func;
 	}
 	
-	auto GetOnReceiveFunc() -> nr::ntw::Session::OnReceiveFunc {
+	auto GetOnReceiveFunc() -> neuria::network::Session::OnReceiveFunc {
 		return boost::bind(
 			&BehaviorDispatcher::Dispatch, this->shared_from_this(), _1, _2);
 	}
@@ -34,11 +34,11 @@ private:
     BehaviorDispatcher(boost::asio::io_service& service, std::ostream& os)
 		: service(service), os(os){}
 
-	auto Dispatch(nr::ntw::Session::Pointer session, 
-			const nr::ByteArray& byte_array) -> void {
+	auto Dispatch(neuria::network::Session::Pointer session, 
+			const neuria::ByteArray& byte_array) -> void {
 		//this->os << "received dispatch command serialized byte array: " 
 		//	<< utl::ByteArray2String(byte_array) << std::endl;
-		auto command = cmd::DispatchCommand::Parse(byte_array);
+		auto command = command::DispatchCommand::Parse(byte_array);
 		this->os << "received dispatch command: " << command << std::endl;
 		if(this->func_dict.find(command.GetCommandId()()) == this->func_dict.end()){
 			this->os << "invalid command id:" << command.GetCommandId() << std::endl;
@@ -58,7 +58,7 @@ private:
 		std::ostream& os, const BehaviorDispatcher& dispatcher) -> std::ostream&;
 
 	boost::asio::io_service& service;
-	std::map<cmd::CommandId::WrappedType, nr::ntw::Session::OnReceiveFunc> func_dict;
+	std::map<command::CommandId::WrappedType, neuria::network::Session::OnReceiveFunc> func_dict;
 	std::ostream& os;
 };
 
