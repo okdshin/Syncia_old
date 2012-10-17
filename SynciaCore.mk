@@ -1,9 +1,9 @@
 CXX = g++ -std=gnu++0x
-CXXFLAGS = -Wall -g -D SYNCIACUI_UNIT_TEST
+CXXFLAGS = -Wall -g -D SYNCIACORE_UNIT_TEST
 INCLUDES = 
 LIBS = -lboost_filesystem -lboost_date_time -lboost_iostreams -lboost_serialization -lcrypto -lboost_thread -ldl -lpthread -lboost_system
-OBJS = SynciaCui.o
-PROGRAM = SynciaCui.out
+OBJS = SynciaCore.o
+PROGRAM = SynciaCore.out
 
 all:$(PROGRAM)
 

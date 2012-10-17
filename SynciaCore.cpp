@@ -1,5 +1,5 @@
-#ifdef SYNCIACUI_UNIT_TEST
-#include "SynciaCui.h"
+#ifdef SYNCIACORE_UNIT_TEST
+#include "SynciaCore.h"
 #include <iostream>
 
 using namespace syncia;
@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	auto lower_session_pool = neuria::network::SessionPool::Create();
 	auto file_db = database::FileKeyHashDb::Create(0.3, buffer_size, std::cout);
 
-	auto syncia = SynciaCui::Create(
+	auto syncia = SynciaCore::Create(
 		max_key_hash_count, spread_key_hash_max_count, max_hop_count, buffer_size, 
 		upper_session_pool, lower_session_pool, file_db, node_id, std::cout);
 	syncia->Bind(client);

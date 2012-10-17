@@ -1,5 +1,5 @@
 #pragma once
-//SynciaCui:20120926
+//SynciaCore:20120926
 #include <iostream>
 #include "neuria/Neuria.h"
 #include "neuria/test/CuiShell.h"
@@ -21,9 +21,9 @@
 namespace syncia
 {
 
-class SynciaCui : public boost::enable_shared_from_this<SynciaCui>{
+class SynciaCore : public boost::enable_shared_from_this<SynciaCore>{
 public:
-	using Pointer = boost::shared_ptr<SynciaCui>;
+	using Pointer = boost::shared_ptr<SynciaCore>;
 
 	static auto Create(
 			unsigned int max_key_hash_count, 
@@ -63,7 +63,7 @@ public:
 				return file_db->Get(hash_id).GetFilePath();
 			}, os);
 
-		return Pointer(new SynciaCui(upload_action, 
+		return Pointer(new SynciaCore(upload_action, 
 			fetch_link_action, fetch_link_behavior, 
 			search_key_hash_action, search_key_hash_behavior,
 			spread_key_hash_action, spread_key_hash_behavior,
@@ -137,7 +137,7 @@ public:
 	}
 
 private:
-    SynciaCui(
+    SynciaCore(
 		UploadAction::Pointer upload_action, 
 		LinkAction::Pointer fetch_link_action, 
 		LinkBehavior::Pointer fetch_link_behavior,
