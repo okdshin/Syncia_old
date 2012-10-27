@@ -10,9 +10,13 @@ int main(int argc, char* argv[])
 	boost::asio::io_service::work w(service);
 	boost::thread t(boost::bind(&boost::asio::io_service::run, &service));
 	int local_port = 54321;
-	if(argc == 2)
-	{
-		local_port = boost::lexical_cast<int>(argv[1]);
+	auto hostname = std::string("localhost");
+	if(argc > 0){
+		hostname = std::string(argv[0]);
+		if(argc == 2)
+		{
+			local_port = boost::lexical_cast<int>(argv[1]);
+		}	
 	}
 
 	const int buffer_size = 128;
@@ -20,7 +24,7 @@ int main(int argc, char* argv[])
 	const unsigned int spread_key_hash_max_count = 200;
 	const unsigned int max_hop_count = 6;
 
-	std::stringstream no_output;
+	//std::stringstream no_output;
 	
 	auto server = neuria::network::SocketServer::Create(
 		service, local_port, buffer_size, std::cout);
@@ -30,7 +34,7 @@ int main(int argc, char* argv[])
 	auto client = neuria::network::SocketClient::Create(
 		service, buffer_size, std::cout);
 	
-	auto node_id = neuria::network::CreateSocketNodeId("127.0.0.1", local_port);
+	auto node_id = neuria::network::CreateSocketNodeId(hostname, local_port);
 	
 	auto upper_session_pool = neuria::network::SessionPool::Create();
 	auto lower_session_pool = neuria::network::SessionPool::Create();
