@@ -35,6 +35,10 @@ public:
 	auto Bind(BehaviorDispatcher::Pointer dispatcher) -> void {
 		this->fetch_behavior->Bind(dispatcher);
 	}
+	
+	auto Bind(neuria::network::Client::Pointer client) -> void {
+		this->fetch_behavior->Bind(client);
+	}
 
 private:
     SpreadKeyHashBehavior(FetchBehavior::Pointer fetch_behavior, 

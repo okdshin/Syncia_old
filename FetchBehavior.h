@@ -81,6 +81,7 @@ private:
 			if(fetch_command.IsAnswer()){ //When Answer
 				this->os << "on receive fetch answer." << std::endl;
 				std::cout << fetch_command << std::endl;
+				assert(this->client != nullptr);
 				neuria::network::Send(this->client,
 					fetch_command.GetOneStepCloserNodeId(this->node_id),	
 					command::DispatchCommand(

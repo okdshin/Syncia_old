@@ -127,6 +127,7 @@ public:
 		this->fetch_link_action->Bind(client);
 		this->fetch_link_behavior->Bind(client);
 		this->search_key_hash_behavior->Bind(client);
+		this->spread_key_hash_behavior->Bind(client);
 		this->request_file_action->Bind(client);
 	}
 	
