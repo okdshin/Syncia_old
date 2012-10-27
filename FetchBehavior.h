@@ -90,7 +90,11 @@ private:
 							this->fetch_answer_redirector(
 								fetch_command.GetWrappedByteArray())
 						).Serialize()
-					).Serialize()
+					).Serialize(),
+					[this](const neuria::network::ErrorCode& error_code){
+						this->os << "failed connect to answer. : " 
+							<< error_code << std::endl;	
+					}
 				);
 			}
 			else{ //When Query
@@ -98,18 +102,24 @@ private:
 				auto is_answer = 
 					this->is_turning_point_decider(fetch_command.GetRoute(), 
 						fetch_command.GetWrappedByteArray());
-				auto redirect_byte_array = 
-					this->fetch_query_redirector(fetch_command.GetWrappedByteArray());
-				this->at_random_selector(*to_session_pool)->Send(
-					command::DispatchCommand(
-						this->command_id,
-						command::FetchCommand(
-							is_answer, fetch_command.GetRoute(), 
-							redirect_byte_array
-						).Serialize()
-					).Serialize(),
-					[](neuria::network::Session::Pointer){}
-				);
+				if(this->to_session_pool->GetSize() == 0){
+					std::cout << 
+						"...but no link. so unable to resolve fetch query." << std::endl;
+				}
+				else{
+					auto redirect_byte_array = 
+						this->fetch_query_redirector(fetch_command.GetWrappedByteArray());
+					this->at_random_selector(*(this->to_session_pool))->Send(
+						command::DispatchCommand(
+							this->command_id,
+							command::FetchCommand(
+								is_answer, fetch_command.GetRoute(), 
+								redirect_byte_array
+							).Serialize()
+						).Serialize(),
+						[](neuria::network::Session::Pointer){}
+					);
+				}
 			}
 		}
 	}

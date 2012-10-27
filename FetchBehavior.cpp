@@ -6,7 +6,7 @@
 #include "CommandToRandomNodeAction.h"
 #include "neuria/test/CuiShell.h"
 
-using namespace sy;
+using namespace syncia;
 
 int main(int argc, char* argv[])
 {
@@ -24,39 +24,39 @@ int main(int argc, char* argv[])
 
 	std::stringstream no_output;
 	
-	auto server = nr::ntw::SocketServer::Create(
+	auto server = neuria::network::SocketServer::Create(
 		service, local_port, buffer_size, std::cout);
 	auto dispatcher = BehaviorDispatcher::Create(service, std::cout);
 	SetOnReceiveFuncOnly(server, dispatcher->GetOnReceiveFunc());
 
-	auto accepted_pool = nr::ntw::SessionPool::Create();
-	auto connected_pool = nr::ntw::SessionPool::Create();
-	auto node_id = nr::utl::CreateSocketNodeId("127.0.0.1", local_port);
-	auto client = nr::ntw::SocketClient::Create(service, buffer_size, std::cout);
+	auto accepted_pool = neuria::network::SessionPool::Create();
+	auto connected_pool = neuria::network::SessionPool::Create();
+	auto node_id = neuria::network::CreateSocketNodeId("127.0.0.1", local_port);
+	auto client = neuria::network::SocketClient::Create(service, buffer_size, std::cout);
 	
 	auto fetch_behavior1 = FetchBehavior::Create(
-		cmd::CommandId("fetch1_command"), node_id, accepted_pool, std::cout);
+		command::CommandId("fetch1_command"), node_id, accepted_pool, std::cout);
 
 	fetch_behavior1->SetIsTurningPointDecider(
-		[max_hop_count](const cmd::FetchCommand::Route& route, 
-				const nr::ByteArray& byte_array) -> cmd::IsAnswer {
-			return cmd::IsAnswer(route.size() >= max_hop_count);
+		[max_hop_count](const command::FetchCommand::Route& route, 
+				const neuria::ByteArray& byte_array) -> command::IsAnswer {
+			return command::IsAnswer(route.size() >= max_hop_count);
 		});
 
 	fetch_behavior1->SetFetchQueryRedirector(
-		[](const nr::ByteArray& byte_array) -> nr::ByteArray {
-			std::cout << nr::utl::ByteArray2String(byte_array) << std::endl;
+		[](const neuria::ByteArray& byte_array) -> neuria::ByteArray {
+			std::cout << neuria::utility::ByteArray2String(byte_array) << std::endl;
 			return byte_array;
 		});
 
 	fetch_behavior1->SetFetchAnswerRedirector(
-		[](const nr::ByteArray& byte_array) -> nr::ByteArray {
-			std::cout << nr::utl::ByteArray2String(byte_array) << std::endl;
+		[](const neuria::ByteArray& byte_array) -> neuria::ByteArray {
+			std::cout << neuria::utility::ByteArray2String(byte_array) << std::endl;
 			return byte_array;
 		});
 	
 	fetch_behavior1->SetOnReceiveFetchAnswerFunc(
-		[](nr::ntw::Session::Pointer session, const nr::ByteArray& byte_array){
+		[](neuria::network::Session::Pointer session, const neuria::ByteArray& byte_array){
 			std::cout << "got answer!!" << std::endl;
 		});
 	
@@ -64,28 +64,28 @@ int main(int argc, char* argv[])
 	fetch_behavior1->Bind(client);
 	
 	auto fetch_behavior2 = FetchBehavior::Create(
-		cmd::CommandId("fetch2_command"), node_id, accepted_pool, std::cout);
+		command::CommandId("fetch2_command"), node_id, accepted_pool, std::cout);
 
 	fetch_behavior2->SetIsTurningPointDecider(
-		[max_hop_count](const cmd::FetchCommand::Route& route, 
-				const nr::ByteArray& byte_array) -> cmd::IsAnswer {
-			return cmd::IsAnswer(route.size() >= max_hop_count);
+		[max_hop_count](const command::FetchCommand::Route& route, 
+				const neuria::ByteArray& byte_array) -> command::IsAnswer {
+			return command::IsAnswer(route.size() >= max_hop_count);
 		});
 
 	fetch_behavior2->SetFetchQueryRedirector(
-		[](const nr::ByteArray& byte_array) -> nr::ByteArray {
-			std::cout << "2222" << nr::utl::ByteArray2String(byte_array) << std::endl;
+		[](const neuria::ByteArray& byte_array) -> neuria::ByteArray {
+			std::cout << "2222" << neuria::utility::ByteArray2String(byte_array) << std::endl;
 			return byte_array;
 		});
 
 	fetch_behavior2->SetFetchAnswerRedirector(
-		[](const nr::ByteArray& byte_array) -> nr::ByteArray {
-			std::cout << nr::utl::ByteArray2String(byte_array) << std::endl;
+		[](const neuria::ByteArray& byte_array) -> neuria::ByteArray {
+			std::cout << neuria::utility::ByteArray2String(byte_array) << std::endl;
 			return byte_array;
 		});
 	
 	fetch_behavior2->SetOnReceiveFetchAnswerFunc(
-		[](nr::ntw::Session::Pointer session, const nr::ByteArray& byte_array){
+		[](neuria::network::Session::Pointer session, const neuria::ByteArray& byte_array){
 			std::cout << "got answer!!" << std::endl;
 		});
 	
@@ -93,53 +93,54 @@ int main(int argc, char* argv[])
 	fetch_behavior2->Bind(client);
 	
 	auto link_behavior = LinkBehavior::Create(accepted_pool, 
-		cmd::CommandId("test link query command"), std::cout);
+		command::CommandId("link"), std::cout);
 	link_behavior->SetOnReceiveLinkQueryFunc(
-		[](nr::ntw::Session::Pointer session, const nr::ByteArray& byte_array){
-			std::cout << nr::utl::ByteArray2String(byte_array) << std::endl;	
+		[](neuria::network::Session::Pointer session, const neuria::ByteArray& byte_array){
+			std::cout << neuria::utility::ByteArray2String(byte_array) << std::endl;	
 		});
 
 	link_behavior->Bind(dispatcher);
+	link_behavior->Bind(client);
 	
 	server->StartAccept();
 
-	auto link_action = LinkAction::Create(connected_pool, std::cout);
+	auto link_action = LinkAction::Create(command::CommandId("link"), connected_pool, node_id, [](const neuria::network::ErrorCode&){}, std::cout);
 	
 	link_action->Bind(client);
 
-	auto shell = nr::test::CuiShell(std::cout);
-	nr::utl::RegisterExitFunc(shell);
+	auto shell = neuria::test::CuiShell(std::cout);
+	neuria::test::RegisterExitFunc(shell);
 	shell.Register("link", ": create new link.", 
-		[link_action](const nr::utl::Shell::ArgumentList& argument_list){
+		[link_action](const neuria::test::CuiShell::ArgList& argument_list){
 			link_action->CreateLink(
-				nr::utl::CreateSocketNodeId(
+				neuria::network::CreateSocketNodeId(
 					argument_list.at(1), 
 					boost::lexical_cast<int>(argument_list.at(2))),
-				cmd::CommandId("test link query command"),
-				nr::utl::String2ByteArray("link please!! 12345"));
+				//command::CommandId("test link query command"),
+				neuria::utility::String2ByteArray("link please!! 12345"));
 		});
 
 	auto command_to_random_node_action = 
 		CommandToRandomNodeAction::Create(connected_pool, std::cout);
 	shell.Register("fetch1", ": fetch",
 		[command_to_random_node_action, node_id]
-		(const nr::utl::Shell::ArgumentList& argument_list){
-			auto initial_route = cmd::FetchCommand::Route();
+		(const neuria::test::CuiShell::ArgList& argument_list){
+			auto initial_route = command::FetchCommand::Route();
 			initial_route.push_back(node_id);
 			command_to_random_node_action->CommandToRandomNode(
-				cmd::CommandId("fetch1_command"),
-				cmd::FetchCommand(cmd::IsAnswer(false), initial_route,
-					nr::utl::String2ByteArray("fetch11111111!!!")).Serialize());
+				command::CommandId("fetch1_command"),
+				command::FetchCommand(command::IsAnswer(false), initial_route,
+					neuria::utility::String2ByteArray("fetch11111111!!!")).Serialize());
 		});
 	shell.Register("fetch2", ": fetch",
 		[command_to_random_node_action, node_id]
-		(const nr::utl::Shell::ArgumentList& argument_list){
-			auto initial_route = cmd::FetchCommand::Route();
+		(const neuria::test::CuiShell::ArgList& argument_list){
+			auto initial_route = command::FetchCommand::Route();
 			initial_route.push_back(node_id);
 			command_to_random_node_action->CommandToRandomNode(
-				cmd::CommandId("fetch2_command"),
-				cmd::FetchCommand(cmd::IsAnswer(false), initial_route,
-					nr::utl::String2ByteArray("fetch222222222!!!")).Serialize());
+				command::CommandId("fetch2_command"),
+				command::FetchCommand(command::IsAnswer(false), initial_route,
+					neuria::utility::String2ByteArray("fetch222222222!!!")).Serialize());
 		});
 	shell.Start();
 

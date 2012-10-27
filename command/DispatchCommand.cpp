@@ -8,9 +8,10 @@ using namespace syncia::command;
 int main(int argc, char* argv[])
 {
 	auto command = DispatchCommand(CommandId("command_id"), 
-		neuria::utility::String2ByteArray("byte_arraydfghjkhgfdgh"));
-	//std::cout << utl::ByteArray2String(command.Serialize()) << std::endl;
-	std::cout << "parsed:" << DispatchCommand::Parse(command.Serialize()) << std::endl;
+		neuria::utility::String2ByteArray("byte array"));
+	std::cout << command << std::endl;
+	std::cout << neuria::utility::ByteArray2String(command.Serialize()) << std::endl;
+	std::cout << "parsed:\n" << DispatchCommand::Parse(command.Serialize()) << std::endl;
 
     return 0;
 }

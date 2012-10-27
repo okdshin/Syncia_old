@@ -26,7 +26,11 @@ public:
 
 	auto CommandToRandomNode(const command::CommandId& command_id, 
 			const neuria::ByteArray& serialized_command_byte_array) -> void {
-		assert(to_session_pool->GetSize() > 0);
+		//assert(to_session_pool->GetSize() > 0);
+		if(to_session_pool->GetSize() == 0){
+			os << "no link." << std::endl;
+			return;	
+		}
 		this->at_random_selector(*(to_session_pool))->Send(
 			command::DispatchCommand(
 				command_id, serialized_command_byte_array).Serialize(),

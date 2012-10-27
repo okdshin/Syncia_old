@@ -45,7 +45,11 @@ private:
 		auto command = command::LinkCommand::Parse(byte_array);
 		std::cout << "LowerNodeId:" << command.GetNodeId() << std::endl;
 		neuria::network::Connect(this->client, command.GetNodeId(), this->pool, 
-			[](neuria::network::Session::Pointer, const neuria::ByteArray&){});
+			[this](const neuria::network::ErrorCode& error_code){
+				this->os << error_code << std::endl;	
+			},
+			[](neuria::network::Session::Pointer, const neuria::ByteArray&){}
+		);
 		this->on_receive_link_query_func(session, command.GetWrappedByteArray());
 	}
 

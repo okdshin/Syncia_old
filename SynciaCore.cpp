@@ -16,9 +16,9 @@ int main(int argc, char* argv[])
 	}
 
 	const int buffer_size = 128;
-	const unsigned int max_key_hash_count = 5;
-	const unsigned int spread_key_hash_max_count = 2;
-	const unsigned int max_hop_count = 3;
+	const unsigned int max_key_hash_count = 30;
+	const unsigned int spread_key_hash_max_count = 200;
+	const unsigned int max_hop_count = 6;
 
 	std::stringstream no_output;
 	
@@ -35,10 +35,19 @@ int main(int argc, char* argv[])
 	auto upper_session_pool = neuria::network::SessionPool::Create();
 	auto lower_session_pool = neuria::network::SessionPool::Create();
 	auto file_db = database::FileKeyHashDb::Create(0.3, buffer_size, std::cout);
+	auto searched_file_db = 
+		database::FileKeyHashDb::Create(0.3, buffer_size, std::cout);
 
 	auto syncia = SynciaCore::Create(
 		max_key_hash_count, spread_key_hash_max_count, max_hop_count, buffer_size, 
-		upper_session_pool, lower_session_pool, file_db, node_id, std::cout);
+		upper_session_pool, lower_session_pool, file_db, searched_file_db, 
+		node_id, 
+		[](const neuria::network::ErrorCode& error_code){
+			std::cout << "failed create link : " << error_code << std::endl;
+		},
+		[](const FileSystemPath& file_path){
+			std::cout << "replied! :" << file_path << std::endl;
+		}, std::cout);
 	syncia->Bind(client);
 	syncia->Bind(dispatcher);
 	auto multiple_timer = neuria::timer::MultipleTimer::Create(service);
@@ -55,14 +64,23 @@ int main(int argc, char* argv[])
 		[file_db](const neuria::test::CuiShell::ArgList& args){
 			std::cout << file_db << std::endl;
 		});
+	shell.Register("sdb", "show uploaded files.", 
+		[searched_file_db](const neuria::test::CuiShell::ArgList& args){
+			std::cout << searched_file_db << std::endl;
+		});
 	shell.Register("link", "create new search link.", 
 		[syncia](const neuria::test::CuiShell::ArgList& args){
-			syncia->CreateSearchLink(
-				neuria::network::CreateSocketNodeId(
-					args.at(1), 
-					boost::lexical_cast<int>(args.at(2))
-				)
-			);
+			try{
+				syncia->CreateSearchLink(
+					neuria::network::CreateSocketNodeId(
+						args.at(1), 
+						boost::lexical_cast<int>(args.at(2))
+					)
+				);
+			}
+			catch(...){
+				std::cout << "invalid node_id" << std::endl;
+			}
 		});
 	shell.Register("search", "search key hash.", 
 		[syncia](const neuria::test::CuiShell::ArgList& args){

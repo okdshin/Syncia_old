@@ -15,10 +15,14 @@ namespace database{
 
 
 using FileKeyHashList = std::vector<FileKeyHash>;
+class IsErasedType{};
+using IsErased = neuria::utility::TypeWrapper<bool, IsErasedType>;
 
 class FileKeyHashDb{
 public:
 	using Pointer = boost::shared_ptr<FileKeyHashDb>;
+	using ApplyFunc = boost::function<void (FileKeyHash&)>;
+	using IsErasedDecider = boost::function<IsErased (const FileKeyHash&)>;
 	static auto Create(double threshold, int buffer_size, 
 			std::ostream& os) -> Pointer {
 		return Pointer(new FileKeyHashDb(threshold, buffer_size, os));	
@@ -55,11 +59,25 @@ public:
 				SerializeFile(file_path, this->buffer_size))), 
 			keyward, node_id, file_path));
 	}
-
+/*
 	auto UpdateBirthTime() -> void {
 		for(auto& key_hash : this->hash_list){
 			key_hash.SetBirthTimeNow();
 		}	
+	}
+*/
+	auto Apply(ApplyFunc apply_func) -> void {
+		std::for_each(this->hash_list.begin(), this->hash_list.end(), apply_func);
+	}
+
+	auto Erase(IsErasedDecider decider) -> void {
+		this->hash_list.erase(
+			std::remove_if(this->hash_list.begin(), this->hash_list.end(), 
+				[decider](const FileKeyHash& key_hash) -> bool {
+					return decider(key_hash)();
+				}),
+			this->hash_list.end()
+		);
 	}
 
 	auto Search(const KeywardList& search_keyward_list) -> FileKeyHashList {
@@ -68,9 +86,11 @@ public:
 			for(const auto& keyward : search_keyward_list()){
 				this->os << keyward << " ";	
 			}
+			/*
 			this->os << "/similarity:" 
 				<< CalcSimilarity(
 					search_keyward_list, key_hash.GetKeyward()) << std::endl;
+			*/
 		}
 		auto end = std::partition(this->hash_list.begin(), this->hash_list.end(), 
 			[&](const FileKeyHash& key_hash){

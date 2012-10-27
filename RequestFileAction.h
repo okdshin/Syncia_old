@@ -24,6 +24,7 @@ class RequestFileAction :
 		public boost::enable_shared_from_this<RequestFileAction> {
 public:
 	using Pointer = boost::shared_ptr<RequestFileAction>;
+	using OnRepliedFileFunc = boost::function<void (const FileSystemPath&)>;
 
 	static auto Create(std::ostream& os) -> Pointer {
 		return Pointer(new RequestFileAction(os));
@@ -33,22 +34,30 @@ public:
 		this->client = client;	
 	}
 
-	auto RequestFile(const database::HashId& hash_id, const neuria::network::NodeId& node_id, 
-			const FileSystemPath& download_directory_path) -> void {
+	auto RequestFile(const database::HashId& hash_id, 
+			const neuria::network::NodeId& node_id, 
+			const FileSystemPath& download_directory_path,
+			OnRepliedFileFunc on_replied_file_func) -> void {
 		Communicate(this->client, node_id,
+			[this](const neuria::network::ErrorCode& error_code){
+				this->os << "failed connect to request file: " 
+					<< error_code << std::endl;
+			},
 			command::DispatchCommand(
 				command::GetCommandId<command::RequestFileQueryCommand>(),
 				command::RequestFileQueryCommand(hash_id).Serialize()
 			).Serialize(),
-			[this, download_directory_path](neuria::network::Session::Pointer session, 
+			[this, download_directory_path, on_replied_file_func](neuria::network::Session::Pointer session, 
 					const neuria::ByteArray& byte_array){
 				auto command = command::RequestFileAnswerCommand::Parse(byte_array);
 				ParseFile(download_directory_path, command.GetFilePath(), 
 					command.GetFileByteArray());
 				this->os << "replied file!: " 
 					<< command.GetFilePath().filename() << std::endl;
+				on_replied_file_func(command.GetFilePath());
 			},
-			[](neuria::network::Session::Pointer){});
+			[](neuria::network::Session::Pointer){}
+		);
 	}
 
 

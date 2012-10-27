@@ -19,13 +19,16 @@ public:
 	static auto Create(const neuria::network::NodeId& node_id, 
 			unsigned int max_key_hash_count, unsigned int max_hop_count, 
 			neuria::network::SessionPool::Pointer to_session_pool,
-			database::FileKeyHashDb::Pointer file_db, std::ostream& os) -> Pointer {
+			database::FileKeyHashDb::Pointer file_db, 
+			database::FileKeyHashDb::Pointer searched_file_db, 
+			std::ostream& os) -> Pointer {
 		
 		auto fetch_behavior = FetchBehavior::Create(
 			command::GetCommandId<command::SearchKeyHashCommand>(), 
 			node_id, to_session_pool, os);
 		auto search_key_hash_behavior = Pointer(
-			new SearchKeyHashBehavior(fetch_behavior, max_key_hash_count, max_hop_count, file_db, os));
+			new SearchKeyHashBehavior(
+				fetch_behavior, max_key_hash_count, max_hop_count, file_db, searched_file_db, os));
 		
 		search_key_hash_behavior->BindToFetchBehavior(fetch_behavior);
 		return search_key_hash_behavior;
@@ -35,12 +38,19 @@ public:
 		this->fetch_behavior->Bind(dispatcher);
 	}
 
+	auto Bind(neuria::network::Client::Pointer client) -> void {
+		this->fetch_behavior->Bind(client);	
+	}
+
 private:
     SearchKeyHashBehavior(FetchBehavior::Pointer fetch_behavior, 
 		unsigned int max_key_hash_count, unsigned int max_hop_count, 
-		database::FileKeyHashDb::Pointer file_db, std::ostream& os) 
+		database::FileKeyHashDb::Pointer file_db, 
+		database::FileKeyHashDb::Pointer searched_file_db, 
+		std::ostream& os) 
 			: fetch_behavior(fetch_behavior), max_key_hash_count(max_key_hash_count), 
-			max_hop_count(max_hop_count), file_db(file_db), os(os){}
+			max_hop_count(max_hop_count), file_db(file_db), 
+			searched_file_db(searched_file_db), os(os){}
 
 	auto BindToFetchBehavior(FetchBehavior::Pointer fetch_behavior) -> void {
 		fetch_behavior->SetIsTurningPointDecider(boost::bind(
@@ -76,6 +86,7 @@ private:
 	auto RedirectFetchAnswer(const neuria::ByteArray& byte_array) -> neuria::ByteArray {
 		auto command = command::SearchKeyHashCommand::Parse(byte_array);
 		this->file_db->Add(command.GetFoundKeyHashList());
+		std::cout << "redirect fetch answer : " << file_db << std::endl;
 		return command.Serialize();
 	}
 
@@ -83,6 +94,8 @@ private:
 			const neuria::ByteArray& byte_array) -> void {
 		auto command = command::SearchKeyHashCommand::Parse(byte_array);
 		this->file_db->Add(command.GetFoundKeyHashList());
+		this->searched_file_db->Add(command.GetFoundKeyHashList());
+		std::cout << "on receive fetch answer : " << file_db << std::endl;
 		std::cout << "got answer" << std::endl;
 	}
 
@@ -90,6 +103,7 @@ private:
 	unsigned int max_key_hash_count;
 	unsigned int max_hop_count;
 	database::FileKeyHashDb::Pointer file_db;
+	database::FileKeyHashDb::Pointer searched_file_db;
 	std::ostream& os;
 };
 
