@@ -27,11 +27,11 @@ void TestSerialize(const Type& target)
 
 int main(int argc, char* argv[])
 {
-	auto command = SearchKeyHashCommand(nr::db::KeywardList({"hello", "world"}));
-	command.AddFoundKeyHashList({nr::db::FileKeyHash(
-		nr::db::HashId("hash_id"), 
-		nr::db::Keyward("keyward"), 
-		nr::NodeId("owner_id"), boost::filesystem::path("./"))});
+	auto command = SearchKeyHashCommand(database::KeywardList({"hello", "world"}));
+	command.AddFoundKeyHashList({database::FileKeyHash(
+		database::HashId("hash_id"), 
+		database::Keyward("keyward"), 
+		neuria::network::NodeId("owner_id"), boost::filesystem::path("./"))});
 	//TestSerialize(command);
 	auto byte_array = command.Serialize();
 	std::cout << SearchKeyHashCommand::Parse(byte_array) << std::endl;

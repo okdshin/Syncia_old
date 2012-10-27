@@ -19,8 +19,8 @@ namespace command{
 class SearchKeyHashCommand {
 public:
 	SearchKeyHashCommand(){}
-	SearchKeyHashCommand(const database::KeywardList& search_keyward_list)
-		: search_keyward_list(search_keyward_list()){}
+	SearchKeyHashCommand(const database::KeywordList& search_keyword_list)
+		: search_keyword_list(search_keyword_list()){}
 
 	static auto Parse(const neuria::ByteArray& byte_array) -> SearchKeyHashCommand {
 		std::stringstream ss(neuria::utility::ByteArray2String(byte_array));
@@ -37,8 +37,8 @@ public:
 		return neuria::utility::String2ByteArray(ss.str());
 	}
 
-	auto GetSearchKeywardList() const -> database::KeywardList { 
-		return database::KeywardList(search_keyward_list); }
+	auto GetSearchKeywordList() const -> database::KeywordList { 
+		return database::KeywordList(search_keyword_list); }
 
 	auto GetFoundKeyHashList() const -> database::FileKeyHashList {
 		return found_key_hash_list; }
@@ -53,20 +53,20 @@ private:
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive& ar, unsigned int ver){
-		ar & search_keyward_list & found_key_hash_list;
+		ar & search_keyword_list & found_key_hash_list;
 	}
 
-	database::KeywardList::WrappedType search_keyward_list;
+	database::KeywordList::WrappedType search_keyword_list;
 	database::FileKeyHashList found_key_hash_list;
 	
 };
 
 auto operator<<(std::ostream& os, 
 		const SearchKeyHashCommand& command) -> std::ostream& {
-	auto keyward_list = command.GetSearchKeywardList()();
-	os << "KeywardList:";
-	std::copy(keyward_list.begin(), keyward_list.end(), 
-		std::ostream_iterator<database::Keyward::WrappedType>(os, " "));
+	auto keyword_list = command.GetSearchKeywordList()();
+	os << "KeywordList:";
+	std::copy(keyword_list.begin(), keyword_list.end(), 
+		std::ostream_iterator<database::Keyword::WrappedType>(os, " "));
 	os << " ";
 	auto key_hash_list = command.GetFoundKeyHashList();
 	os << "KeyHashList:";

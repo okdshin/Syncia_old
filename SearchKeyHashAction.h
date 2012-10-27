@@ -25,11 +25,11 @@ public:
 	}
 
 	auto SearchKeyHash(
-			const database::KeywardList& search_keyward_list) -> void {
-		assert(!search_keyward_list().empty());
+			const database::KeywordList& search_keyword_list) -> void {
+		assert(!search_keyword_list().empty());
 		this->os << "query search key hash" << std::endl;
 		this->fetch_action->Fetch(
-			command::SearchKeyHashCommand(search_keyward_list).Serialize());	
+			command::SearchKeyHashCommand(search_keyword_list).Serialize());	
 	}
 
 private:

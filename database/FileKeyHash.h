@@ -36,15 +36,15 @@ auto SerializeFile(const FileSystemPath& file_path,
 class FileKeyHash{
 public:
    	FileKeyHash(){}
-	FileKeyHash(const HashId& hash_id, const Keyward& keyward, 
+	FileKeyHash(const HashId& hash_id, const Keyword& keyword, 
 			const neuria::network::NodeId& owner_id, const FileSystemPath& file_path) 
-		:hash_id(hash_id()), keyward(keyward()), owner_id(owner_id), 
+		:hash_id(hash_id()), keyword(keyword()), owner_id(owner_id), 
 		file_path_str(file_path.string()){
 		this->SetBirthTimeNow();
 	}
 	
 	auto GetHashId() const -> HashId { return HashId(hash_id); }
-	auto GetKeyward() const -> Keyward { return Keyward(keyward); }
+	auto GetKeyword() const -> Keyword { return Keyword(keyword); }
 	auto GetOwnerId() const -> neuria::network::NodeId { return owner_id; }
 	auto GetFilePath() const -> FileSystemPath { 
 		return FileSystemPath(this->file_path_str); }
@@ -60,20 +60,20 @@ public:
 private:
 	friend class boost::serialization::access;
 	template<class Archive>
-	void serialize(Archive& ar, unsigned int ver){
-		ar & hash_id & keyward & owner_id 
+	void serialize(Archive& ar, unsigned int ver){	
+		ar & hash_id & keyword & owner_id 
 			& file_path_str & birth_universal_time_str;
 	}
 	
 	HashId::WrappedType hash_id;
-	Keyward::WrappedType keyward;
+	Keyword::WrappedType keyword;
 	neuria::network::NodeId owner_id;
 	std::string file_path_str;
 	std::string birth_universal_time_str;
 };
 
 auto CreateTestFileKeyHash() -> FileKeyHash {
-	return FileKeyHash(HashId("hash_id"), Keyward("keyward"), 
+	return FileKeyHash(HashId("hash_id"), Keyword("keyword"), 
 		neuria::network::NodeId("owner_node_id"), "./test_file.dat");
 }
 
@@ -84,8 +84,8 @@ auto IsFileExist(const FileKeyHash& key_hash) -> bool {
 
 auto operator <<(std::ostream& os, const FileKeyHash& key_hash) -> std::ostream& {
 	os << boost::format(
-		"Keyward:%1%, HashId:%2%, OwnerId:%3%, FilePath:%4%, BirthUniversalTime:%5%") 
-		% key_hash.GetKeyward() 
+		"Keyword:%1%, HashId:%2%, OwnerId:%3%, FilePath:%4%, BirthUniversalTime:%5%") 
+		% key_hash.GetKeyword() 
 		% key_hash.GetHashId() 
 		% key_hash.GetOwnerId() 
 		% key_hash.GetFilePath() 

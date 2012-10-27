@@ -20,7 +20,7 @@ public:
 	}
 
 	auto UploadFile(const FileSystemPath& file_path) -> void {
-		this->file_db->Add(database::Keyward(file_path.filename().string()), 
+		this->file_db->Add(database::Keyword(file_path.filename().string()), 
 			file_path, this->node_id);
 	}
 /*	
@@ -31,7 +31,7 @@ public:
 			if(boost::filesystem::is_regular_file(path_iter->status())){
 				const auto file_path = nr::FileSystemPath(*path_iter);
 				this->UploadFile(
-					nr::db::Keyward(file_path.filename().string()), file_path);
+					nr::db::Keyword(file_path.filename().string()), file_path);
 			}
 		}
 	}

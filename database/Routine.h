@@ -9,16 +9,16 @@ namespace database{
 class HashIdType{};
 using HashId = neuria::utility::TypeWrapper<std::string, HashIdType>;
 
-class KeywardType{};
-using Keyward = neuria::utility::TypeWrapper<std::string, KeywardType>;
+class KeywordType{};
+using Keyword = neuria::utility::TypeWrapper<std::string, KeywordType>;
 
 auto CalcHashId(const neuria::ByteArray& src_data) -> HashId {
 	return HashId(neuria::hash::CalcHashStr(src_data));	
 }
 
-class KeywardListType{};
-using KeywardList = 
-	neuria::utility::TypeWrapper<std::vector<Keyward::WrappedType>, KeywardListType>;
+class KeywordListType{};
+using KeywordList = 
+	neuria::utility::TypeWrapper<std::vector<Keyword::WrappedType>, KeywordListType>;
 
 auto CalcSimilarity(const std::string& left, const std::string& right) -> double {
 	double shorter_length = 
@@ -32,22 +32,22 @@ auto CalcSimilarity(const std::string& left, const std::string& right) -> double
 			? shorter_length*shorter_length/longer_length : -similarity_unit;	
 }
 
-auto CalcSimilarity(const std::vector<std::string>& search_keyward_list, 
-		const std::string& target_keyward) -> double {
+auto CalcSimilarity(const std::vector<std::string>& search_keyword_list, 
+		const std::string& target_keyword) -> double {
 	double similarity = 0.0;
-	for(const auto& search_keyward : search_keyward_list){
-		similarity += CalcSimilarity(search_keyward, target_keyward);
+	for(const auto& search_keyword : search_keyword_list){
+		similarity += CalcSimilarity(search_keyword, target_keyword);
 	}
 	return similarity
-		/ std::max_element(search_keyward_list.begin(), search_keyward_list.end(), 
+		/ std::max_element(search_keyword_list.begin(), search_keyword_list.end(), 
 			[](const std::string& left, const std::string& right)
 				{ return left.size() < right.size(); }
 			)->size();
 }
 
-auto CalcSimilarity(const KeywardList& keyward_list, 
-		const Keyward& keyward) -> double{
-	return CalcSimilarity(keyward_list(), keyward());
+auto CalcSimilarity(const KeywordList& keyword_list, 
+		const Keyword& keyword) -> double{
+	return CalcSimilarity(keyword_list(), keyword());
 }
 
 }

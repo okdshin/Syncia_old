@@ -108,8 +108,8 @@ public:
 			command::LinkForFetchKeyHashCommand().Serialize());	
 	}
 
-	auto SearchKeyHash(const database::KeywardList& keyward_list) -> void {
-		this->search_key_hash_action->SearchKeyHash(keyward_list);
+	auto SearchKeyHash(const database::KeywordList& keyword_list) -> void {
+		this->search_key_hash_action->SearchKeyHash(keyword_list);
 	} 
 	
 	auto RequestSpreadKeyHash() -> void {

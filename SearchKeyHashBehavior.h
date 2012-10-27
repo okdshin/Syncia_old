@@ -79,7 +79,7 @@ private:
 	auto RedirectFetchQuery(const neuria::ByteArray& byte_array) -> neuria::ByteArray {
 		auto command = command::SearchKeyHashCommand::Parse(byte_array);
 		command.AddFoundKeyHashList(
-			this->file_db->Search(command.GetSearchKeywardList()));
+			this->file_db->Search(command.GetSearchKeywordList()));
 		return command.Serialize();
 	}
 

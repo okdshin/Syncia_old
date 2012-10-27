@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 		[search_key_hash_action]
 		(const nr::utl::Shell::ArgumentList& argument_list){
 			search_key_hash_action->QuerySearchKeyHash(
-				database::KeywardList(argument_list));
+				database::KeywordList(argument_list));
 		});
 	
 	shell.Register("db", ": show db",

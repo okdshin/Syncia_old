@@ -52,12 +52,12 @@ public:
 		}
 	}
 	
-	auto Add(const Keyward& keyward, 
+	auto Add(const Keyword& keyword, 
 			const FileSystemPath& file_path, 
 			const neuria::network::NodeId& node_id) -> void {
 		this->Add(FileKeyHash(HashId(CalcHashId(
 				SerializeFile(file_path, this->buffer_size))), 
-			keyward, node_id, file_path));
+			keyword, node_id, file_path));
 	}
 /*
 	auto UpdateBirthTime() -> void {
@@ -80,22 +80,22 @@ public:
 		);
 	}
 
-	auto Search(const KeywardList& search_keyward_list) -> FileKeyHashList {
+	auto Search(const KeywordList& search_keyword_list) -> FileKeyHashList {
 		for(const auto& key_hash : this->hash_list){
-			this->os << key_hash.GetKeyward() << "|";
-			for(const auto& keyward : search_keyward_list()){
-				this->os << keyward << " ";	
+			this->os << key_hash.GetKeyword() << "|";
+			for(const auto& keyword : search_keyword_list()){
+				this->os << keyword << " ";	
 			}
 			/*
 			this->os << "/similarity:" 
 				<< CalcSimilarity(
-					search_keyward_list, key_hash.GetKeyward()) << std::endl;
+					search_keyword_list, key_hash.GetKeyword()) << std::endl;
 			*/
 		}
 		auto end = std::partition(this->hash_list.begin(), this->hash_list.end(), 
 			[&](const FileKeyHash& key_hash){
 				return CalcSimilarity(
-					search_keyward_list, key_hash.GetKeyward()) > this->threshold;	
+					search_keyword_list, key_hash.GetKeyword()) > this->threshold;	
 			});
 		return FileKeyHashList(this->hash_list.begin(), end);
 	}

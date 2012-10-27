@@ -89,10 +89,10 @@ int main(int argc, char* argv[])
 		});
 	shell.Register("search", "search key hash.", 
 		[syncia](const neuria::test::CuiShell::ArgList& args){
-			auto keyward_only = neuria::test::CuiShell::ArgList();
+			auto keyword_only = neuria::test::CuiShell::ArgList();
 			std::copy(args.begin()+1, args.end(), 
-				std::back_inserter(keyward_only));
-			syncia->SearchKeyHash(database::KeywardList(keyward_only));
+				std::back_inserter(keyword_only));
+			syncia->SearchKeyHash(database::KeywordList(keyword_only));
 		});
 	
 	shell.Register("spread", "request spread key hash.", 
@@ -121,7 +121,6 @@ int main(int argc, char* argv[])
 	
 	server->StartAccept();
 	shell.Start();
-	
 	t.join();
 
     return 0;
