@@ -24,9 +24,13 @@ public:
 		return Pointer(new SearchKeyHashAction(fetch_action, os));
 	}
 
-	auto SearchKeyHash(
-			const database::KeywordList& search_keyword_list) -> void {
-		assert(!search_keyword_list().empty());
+	auto SearchKeyHash(database::KeywordList search_keyword_list) -> void {
+		//assert(!search_keyword_list().empty());
+		if(search_keyword_list().empty()){
+			auto wrapped_keyword_list = search_keyword_list();
+			wrapped_keyword_list.push_back("");
+			search_keyword_list = database::KeywordList(wrapped_keyword_list);	
+		}
 		this->os << "query search key hash" << std::endl;
 		this->fetch_action->Fetch(
 			command::SearchKeyHashCommand(search_keyword_list).Serialize());	

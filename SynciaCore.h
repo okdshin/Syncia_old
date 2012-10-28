@@ -94,7 +94,7 @@ public:
 		this->add_remove_watcher_list.push_back(watcher);
 		this->multiple_timer->AddCallbackFuncAndStartTimer(
 			1,
-			[this](){
+			[this]() -> neuria::timer::IsContinue {
 				this->add_remove_watcher_list.back().Check();
 				this->add_remove_watcher_list.back().Call();
 				this->add_remove_watcher_list.back().Update();
@@ -141,7 +141,7 @@ public:
 	auto Bind(neuria::timer::MultipleTimer::Pointer multiple_timer) -> void {
 		this->multiple_timer = multiple_timer;
 		this->multiple_timer->AddCallbackFuncAndStartTimer(10, 
-			[this](){
+			[this]() -> neuria::timer::IsContinue {
 				//this->file_db->UpdateBirthTime();
 				this->file_db->Apply(
 					[this](database::FileKeyHash& key_hash){ 
