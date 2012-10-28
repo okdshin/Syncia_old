@@ -5,6 +5,7 @@
 *.txt
 *.dat
 .*.swp
+*.sh
 *neuria*
 *upload*
 *download*
