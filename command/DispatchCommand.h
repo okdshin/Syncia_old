@@ -22,14 +22,13 @@ public:
 		: command_id_str(command_id()), byte_array(byte_array){}
 
 	static auto Parse(const neuria::ByteArray& byte_array) -> DispatchCommand {
-		/*
 		std::stringstream ss(neuria::utility::ByteArray2String(byte_array));
 		boost::archive::text_iarchive ia(ss);
 		auto command = DispatchCommand();
 		ia >> command;
 		return command;
-		*/
 
+		/*
 		std::stringstream ss;
 		auto str = neuria::utility::ByteArray2String(byte_array);
 		ss << str;
@@ -39,35 +38,33 @@ public:
 			str.begin()+command_id_str.size()+1, str.end());
 		return DispatchCommand(CommandId(command_id_str), 
 			neuria::utility::String2ByteArray(wrapped_byte_array_str));
-		
+		*/	
 	}
 	
 	auto Serialize()const -> neuria::ByteArray {
-		/*
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
 		oa << static_cast<const DispatchCommand&>(*this);
 		return neuria::utility::String2ByteArray(ss.str());	
-		*/
 			
+		/*
 		std::stringstream ss;
 		ss << this->command_id_str << " " 
 			<< neuria::utility::ByteArray2String(this->byte_array) << std::flush;
 		return neuria::utility::String2ByteArray(ss.str());
-		
+		*/
 	}
 
 	auto GetCommandId()const -> CommandId { return CommandId(command_id_str); }
 	auto GetWrappedByteArray()const -> neuria::ByteArray { return byte_array; }
 
 private:
-	/*
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive& ar, unsigned int ver){
 		ar & command_id_str & byte_array;
 	}
-	*/
+
 	std::string command_id_str;
 	neuria::ByteArray byte_array;
 };
