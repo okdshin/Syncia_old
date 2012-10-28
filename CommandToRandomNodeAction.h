@@ -31,9 +31,20 @@ public:
 			os << "no link." << std::endl;
 			return;	
 		}
+		
+		const auto serialized_dispatch_command = command::DispatchCommand(
+			command_id, serialized_command_byte_array
+		).Serialize();
+
+		this->os << "send serialized dispatch command byte array :\"" 
+			<< neuria::utility::ByteArray2String(serialized_dispatch_command) << "\"" << std::endl;;
+
 		this->at_random_selector(*(to_session_pool))->Send(
+			serialized_dispatch_command,
+			/*
 			command::DispatchCommand(
 				command_id, serialized_command_byte_array).Serialize(),
+			*/
 			[](neuria::network::Session::Pointer){});
 	}
 

@@ -21,10 +21,10 @@ int main(int argc, char* argv[])
 	auto node_id = neuria::network::CreateSocketNodeId(hostname, local_port);
 	std::cout << "NodeId is " << node_id << std::endl; 
 
-	const int buffer_size = 128;
+	const int buffer_size = 2048;
 	const unsigned int max_key_hash_count = 30;
 	const unsigned int spread_key_hash_max_count = 200;
-	const unsigned int max_hop_count = 6;
+	const unsigned int max_hop_count = 2;
 
 	//std::stringstream no_output;
 	

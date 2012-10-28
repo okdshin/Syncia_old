@@ -108,8 +108,8 @@ private:
 						"...but no link. so unable to resolve fetch query." << std::endl;
 				}
 				else{
-					auto redirect_byte_array = 
-						this->fetch_query_redirector(fetch_command.GetWrappedByteArray());
+					auto redirect_byte_array = this->fetch_query_redirector(
+						fetch_command.GetWrappedByteArray());
 					this->at_random_selector(*(this->to_session_pool))->Send(
 						command::DispatchCommand(
 							this->command_id,
