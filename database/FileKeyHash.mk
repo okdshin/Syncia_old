@@ -1,4 +1,4 @@
-CXX = g++ -std=gnu++0x
+CXX = g++ -std=c++11
 CXXFLAGS = -Wall -g -D FILEKEYHASH_UNIT_TEST
 INCLUDES = 
 LIBS = -lboost_date_time -lboost_filesystem -lcrypt -lboost_system -lboost_thread -lboost_iostreams -lboost_serialization -lpthread -lcrypto -lboost_serialization -lboost_thread -ldl -lpthread -lboost_system

@@ -16,7 +16,8 @@ auto ParseFile(const FileSystemPath& download_directory_path,
 	std::ofstream ofs(
 		(download_directory_path.string()+file_path.leaf().string()).c_str(), 
 		std::ios::binary);
-	ofs.write(&file_byte_array.front(), file_byte_array.size());
+	ofs.write(static_cast<char*>(static_cast<void*>(const_cast<uint8_t*>(
+		&file_byte_array.front()))), file_byte_array.size());
 	ofs.close();
 }
 

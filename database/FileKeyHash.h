@@ -23,7 +23,9 @@ auto SerializeFile(const FileSystemPath& file_path,
 	int count = 0;
 	while(true){
 		++count;
-		const auto read_size = ifs.readsome(&part_byte_array.front(), buffer_size);
+		const auto read_size = ifs.readsome(
+			static_cast<char*>(static_cast<void*>(&part_byte_array.front())), 
+			buffer_size);
 		std::copy(part_byte_array.begin(), part_byte_array.begin()+read_size, 
 			std::back_inserter(whole_byte_array));
 		if(read_size < buffer_size){ break; }
