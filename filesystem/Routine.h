@@ -10,7 +10,7 @@ namespace filesystem{
 
 using Time = neuria::Time;
 
-auto ForEachFilesInDirectory(const FileSystemPath& dir_path, 
+inline auto ForEachFilesInDirectory(const FileSystemPath& dir_path, 
 		boost::function<void(const FileSystemPath&)> func) -> void{
 	const auto end = boost::filesystem::recursive_directory_iterator();
 	for(auto path_iter = boost::filesystem::recursive_directory_iterator(
@@ -23,11 +23,11 @@ auto ForEachFilesInDirectory(const FileSystemPath& dir_path,
 	
 }
 
-auto IsExist(const FileSystemPath& file_path) -> bool {
+inline auto IsExist(const FileSystemPath& file_path) -> bool {
 	return boost::filesystem::exists(file_path);	
 }
 
-auto GetLastChangeTime(const FileSystemPath& file_path) -> Time {
+inline auto GetLastChangeTime(const FileSystemPath& file_path) -> Time {
 	return boost::posix_time::from_time_t(
 		boost::filesystem::last_write_time(file_path));
 }

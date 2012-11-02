@@ -41,7 +41,7 @@ private:
 
 };
 
-auto operator<<(std::ostream& os, const LinkForFetchKeyHashCommand&) -> std::ostream& {
+inline auto operator<<(std::ostream& os, const LinkForFetchKeyHashCommand&) -> std::ostream& {
 	os << "LinkForFetchKeyHashCommand";
 	return os;
 }

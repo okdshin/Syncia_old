@@ -84,7 +84,7 @@ private:
 	neuria::ByteArray byte_array;
 };
 
-auto operator<<(std::ostream& os, 
+inline auto operator<<(std::ostream& os, 
 		const FetchCommand& command) -> std::ostream& {
 	os << "is answer:" << command.is_answer;
 	std::copy(command.route_node_id_list.begin(), 

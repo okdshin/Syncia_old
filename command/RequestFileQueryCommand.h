@@ -42,7 +42,7 @@ private:
 	database::HashId::WrappedType hash_id;;
 };
 
-auto operator<<(std::ostream& os,
+inline auto operator<<(std::ostream& os,
 		const RequestFileQueryCommand& command) -> std::ostream& {
 	os << "hash id: " << command.GetRequestHashId(); 
 	return os;			

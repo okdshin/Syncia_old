@@ -168,7 +168,7 @@ private:
 	std::ostream& os;
 };
 
-auto operator<<(std::ostream& os, 
+inline auto operator<<(std::ostream& os, 
 		const FileKeyHashDb::Pointer file_key_hash_db) -> std::ostream& {
 	for(const auto& key_hash : file_key_hash_db->hash_list){	
 		os << key_hash << std::endl;

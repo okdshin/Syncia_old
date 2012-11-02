@@ -4,7 +4,7 @@
 
 namespace syncia{
 namespace command{
-
+/*
 auto WriteInt(std::ostream& os, int num) -> void {
 	os << num << " ";
 }
@@ -12,7 +12,7 @@ auto WriteInt(std::ostream& os, int num) -> void {
 auto WriteByteArray(std::ostream& os, const neuria::ByteArray& byte_array){
 	
 }
-
+*/
 
 }
 }

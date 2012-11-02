@@ -12,7 +12,7 @@ using HashId = neuria::utility::TypeWrapper<std::string, HashIdType>;
 class KeywordType{};
 using Keyword = neuria::utility::TypeWrapper<std::string, KeywordType>;
 
-auto CalcHashId(const neuria::ByteArray& src_data) -> HashId {
+inline auto CalcHashId(const neuria::ByteArray& src_data) -> HashId {
 	return HashId(neuria::hash::CalcHashStr(src_data));	
 }
 
@@ -20,7 +20,7 @@ class KeywordListType{};
 using KeywordList = 
 	neuria::utility::TypeWrapper<std::vector<Keyword::WrappedType>, KeywordListType>;
 
-auto CalcSimilarity(const std::string& left, const std::string& right) -> double {
+inline auto CalcSimilarity(const std::string& left, const std::string& right) -> double {
 	double shorter_length = 
 		left.length() < right.length() ? left.length() : right.length();
 	double longer_length = 
@@ -32,7 +32,7 @@ auto CalcSimilarity(const std::string& left, const std::string& right) -> double
 			? shorter_length*shorter_length/longer_length : -similarity_unit;	
 }
 
-auto CalcSimilarity(const std::vector<std::string>& search_keyword_list, 
+inline auto CalcSimilarity(const std::vector<std::string>& search_keyword_list, 
 		const std::string& target_keyword) -> double {
 	double similarity = 0.0;
 	for(const auto& search_keyword : search_keyword_list){
@@ -45,7 +45,7 @@ auto CalcSimilarity(const std::vector<std::string>& search_keyword_list,
 			)->size();
 }
 
-auto CalcSimilarity(const KeywordList& keyword_list, 
+inline auto CalcSimilarity(const KeywordList& keyword_list, 
 		const Keyword& keyword) -> double{
 	return CalcSimilarity(keyword_list(), keyword());
 }

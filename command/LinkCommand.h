@@ -55,7 +55,7 @@ private:
 	neuria::ByteArray byte_array;
 };
 
-auto operator<<(std::ostream& os, 
+inline auto operator<<(std::ostream& os, 
 		const LinkCommand& command) -> std::ostream& {
 	os << "ServerNodeId:" << command.GetNodeId();
 	os << " WrappedByteArray:";

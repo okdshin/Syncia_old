@@ -69,7 +69,7 @@ private:
 	neuria::ByteArray byte_array;
 };
 
-auto operator<<(std::ostream& os, const DispatchCommand& command) -> std::ostream& {
+inline auto operator<<(std::ostream& os, const DispatchCommand& command) -> std::ostream& {
 	os << "command_id:\"" << command.GetCommandId()() << "\" byte_array:\"" 
 		<< neuria::utility::ByteArray2String(command.GetWrappedByteArray()) << "\"" << std::endl;
 	return os;

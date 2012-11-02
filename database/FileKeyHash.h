@@ -98,12 +98,12 @@ auto operator <<(std::ostream& os, const FileKeyHash& key_hash) -> std::ostream&
 }
 
 //for python binding
-auto operator==(const syncia::database::FileKeyHash& left, 
+inline auto operator==(const syncia::database::FileKeyHash& left, 
 		const syncia::database::FileKeyHash& right) -> bool {
 	return false;	
 }
 
-auto operator!=(const syncia::database::FileKeyHash& left, 
+inline auto operator!=(const syncia::database::FileKeyHash& left, 
 		const syncia::database::FileKeyHash& right) -> bool {
 	return true;	
 }

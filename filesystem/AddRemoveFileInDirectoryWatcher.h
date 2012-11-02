@@ -85,8 +85,8 @@ private:
 
 };
 
-void SetOnAddedFileFunc(AddRemoveFileInDirectoryWatcher& watcher, 
-		boost::function<void (const FileSystemPath&)> on_added_file_func){
+inline auto SetOnAddedFileFunc(AddRemoveFileInDirectoryWatcher& watcher, 
+		boost::function<void (const FileSystemPath&)> on_added_file_func) -> void {
 	watcher.SetOnAddedFileListFunc(
 		[on_added_file_func](const FileSystemPathList& file_path_list){
 			for(const auto& file_path : file_path_list){
@@ -96,8 +96,8 @@ void SetOnAddedFileFunc(AddRemoveFileInDirectoryWatcher& watcher,
 	);
 }
 
-void SetOnRemovedFileFunc(AddRemoveFileInDirectoryWatcher& watcher, 
-		boost::function<void (const FileSystemPath&)> on_removed_file_func){
+inline auto SetOnRemovedFileFunc(AddRemoveFileInDirectoryWatcher& watcher, 
+		boost::function<void (const FileSystemPath&)> on_removed_file_func) -> void{
 	watcher.SetOnRemovedFileListFunc(
 		[on_removed_file_func](const FileSystemPathList& file_path_list){
 			for(const auto& file_path : file_path_list){
