@@ -12,4 +12,4 @@ Running Sample
 ----------------  
 Put Neuria directory in Syncia directory and rename it neuria.  
 You can compile and execute Syncia with below line in Syncia directory  
-make -f SynciaCore.mk && ./SynciaCore.out <your ip address> <port number>
+make -f SynciaCore.mk && ./SynciaCore.out \<your ip address\> \<port number\>
