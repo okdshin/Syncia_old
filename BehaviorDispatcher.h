@@ -62,7 +62,7 @@ private:
 	std::ostream& os;
 };
 
-auto operator<<(std::ostream& os, 
+inline auto operator<<(std::ostream& os, 
 		const BehaviorDispatcher& dispatcher) -> std::ostream& {
 	for(auto& pair : dispatcher.func_dict){
 		std::cout << pair.first << ", " << std::flush;
