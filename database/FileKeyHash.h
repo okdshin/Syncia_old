@@ -21,14 +21,14 @@ auto SerializeFile(const FileSystemPath& file_path,
 	auto whole_byte_array = neuria::ByteArray();
 	auto part_byte_array = neuria::ByteArray(buffer_size);
 	int count = 0;
-	while(true){
+	while(ifs && !ifs.eof()){
 		++count;
 		const auto read_size = ifs.readsome(
 			static_cast<char*>(static_cast<void*>(&part_byte_array.front())), 
 			buffer_size);
 		std::copy(part_byte_array.begin(), part_byte_array.begin()+read_size, 
 			std::back_inserter(whole_byte_array));
-		if(read_size < buffer_size){ break; }
+		//if(read_size < buffer_size){ break; }
 	}
 	ifs.close();
 	std::cout << count*buffer_size << " bytes." << std::endl;
