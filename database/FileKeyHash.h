@@ -18,20 +18,29 @@ namespace database{
 auto SerializeFile(const FileSystemPath& file_path, 
 		int buffer_size) -> neuria::ByteArray {
 	boost::filesystem::ifstream ifs(file_path, std::ios::binary);
-	auto whole_byte_array = neuria::ByteArray();
+	std::stringstream ss;
+	ss << ifs.rdbuf();
+	const auto byte_array_str = ss.str();
+	auto whole_byte_array = neuria::utility::String2ByteArray(byte_array_str);
+	/*
 	auto part_byte_array = neuria::ByteArray(buffer_size);
 	int count = 0;
-	while(ifs && !ifs.eof()){
+	while(true){
 		++count;
 		const auto read_size = ifs.readsome(
 			static_cast<char*>(static_cast<void*>(&part_byte_array.front())), 
 			buffer_size);
 		std::copy(part_byte_array.begin(), part_byte_array.begin()+read_size, 
 			std::back_inserter(whole_byte_array));
+		std::cout << "read " << read_size << "bytes" << std::endl;
+		if(ifs.eof()){ break; }
 		//if(read_size < buffer_size){ break; }
 	}
 	ifs.close();
 	std::cout << count*buffer_size << " bytes." << std::endl;
+	*/
+	std::cout << whole_byte_array.size() << " bytes." << std::endl;
+
 	return whole_byte_array;
 }
 

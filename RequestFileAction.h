@@ -39,6 +39,7 @@ public:
 			const neuria::network::NodeId& node_id, 
 			const FileSystemPath& download_directory_path,
 			OnRepliedFileFunc on_replied_file_func) -> void {
+		//neuria::network::
 		Communicate(this->client, node_id,
 			[this](const neuria::network::ErrorCode& error_code){
 				this->os << "failed connect to request file: " 
