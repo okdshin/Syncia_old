@@ -15,31 +15,14 @@
 namespace syncia{
 namespace database{
 
-auto SerializeFile(const FileSystemPath& file_path, 
+inline auto SerializeFile(const FileSystemPath& file_path, 
 		int buffer_size) -> neuria::ByteArray {
 	boost::filesystem::ifstream ifs(file_path, std::ios::binary);
 	std::stringstream ss;
 	ss << ifs.rdbuf();
 	const auto byte_array_str = ss.str();
 	auto whole_byte_array = neuria::utility::String2ByteArray(byte_array_str);
-	/*
-	auto part_byte_array = neuria::ByteArray(buffer_size);
-	int count = 0;
-	while(true){
-		++count;
-		const auto read_size = ifs.readsome(
-			static_cast<char*>(static_cast<void*>(&part_byte_array.front())), 
-			buffer_size);
-		std::copy(part_byte_array.begin(), part_byte_array.begin()+read_size, 
-			std::back_inserter(whole_byte_array));
-		std::cout << "read " << read_size << "bytes" << std::endl;
-		if(ifs.eof()){ break; }
-		//if(read_size < buffer_size){ break; }
-	}
-	ifs.close();
-	std::cout << count*buffer_size << " bytes." << std::endl;
-	*/
-	std::cout << whole_byte_array.size() << " bytes." << std::endl;
+	std::cout << "file serialized: " << whole_byte_array.size() << " bytes." << std::endl;
 
 	return whole_byte_array;
 }
@@ -85,17 +68,17 @@ private:
 	std::string birth_universal_time_str;
 };
 
-auto CreateTestFileKeyHash() -> FileKeyHash {
+inline auto CreateTestFileKeyHash() -> FileKeyHash {
 	return FileKeyHash(HashId("hash_id"), Keyword("keyword"), 
 		neuria::network::NodeId("owner_node_id"), "./test_file.dat");
 }
 
-auto IsFileExist(const FileKeyHash& key_hash) -> bool {
+inline auto IsFileExist(const FileKeyHash& key_hash) -> bool {
 	boost::filesystem::ifstream ifs(key_hash.GetFilePath());
 	return static_cast<bool>(ifs);
 }
 
-auto operator <<(std::ostream& os, const FileKeyHash& key_hash) -> std::ostream& {
+inline auto operator <<(std::ostream& os, const FileKeyHash& key_hash) -> std::ostream& {
 	os << boost::format(
 		"Keyword:%1%, HashId:%2%, OwnerId:%3%, FilePath:%4%, BirthUniversalTime:%5%") 
 		% key_hash.GetKeyword() 

@@ -47,7 +47,7 @@ inline auto operator<<(std::ostream& os, const LinkForFetchKeyHashCommand&) -> s
 }
 
 template<>
-auto GetCommandId<LinkForFetchKeyHashCommand>() -> CommandId {
+inline auto GetCommandId<LinkForFetchKeyHashCommand>() -> CommandId {
 	return CommandId("link_for_fetch_key_hash_command");
 }
 

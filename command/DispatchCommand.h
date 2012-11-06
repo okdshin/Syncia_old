@@ -27,32 +27,18 @@ public:
 		auto command = DispatchCommand();
 		ia >> command;
 		return command;
-
-		/*
-		std::stringstream ss;
-		auto str = neuria::utility::ByteArray2String(byte_array);
-		ss << str;
-		std::string command_id_str;
-		ss >> command_id_str;
-		std::string wrapped_byte_array_str = std::string(
-			str.begin()+command_id_str.size()+1, str.end());
-		return DispatchCommand(CommandId(command_id_str), 
-			neuria::utility::String2ByteArray(wrapped_byte_array_str));
-		*/	
 	}
 	
 	auto Serialize()const -> neuria::ByteArray {
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
-		oa << static_cast<const DispatchCommand&>(*this);
+		try{
+			oa << static_cast<const DispatchCommand&>(*this);
+		}
+		catch(...){
+			std::cout << "DispatchCommand::Serialize" << std::endl;	
+		}
 		return neuria::utility::String2ByteArray(ss.str());	
-			
-		/*
-		std::stringstream ss;
-		ss << this->command_id_str << " " 
-			<< neuria::utility::ByteArray2String(this->byte_array) << std::flush;
-		return neuria::utility::String2ByteArray(ss.str());
-		*/
 	}
 
 	auto GetCommandId()const -> CommandId { return CommandId(command_id_str); }

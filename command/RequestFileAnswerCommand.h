@@ -20,14 +20,26 @@ public:
 		std::stringstream ss(neuria::utility::ByteArray2String(byte_array));
 		boost::archive::text_iarchive ia(ss);
 		auto command = RequestFileAnswerCommand();
-		ia >> command;
+		try{
+			ia >> command;
+		}
+		catch(...){
+			std::cout << "RequestFileAnswerCommand::Parse" << std::endl;
+			throw;
+		}
 		return command;
 	}
 	
 	auto Serialize() const -> neuria::ByteArray {
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
-		oa << static_cast<const RequestFileAnswerCommand&>(*this);
+		try{
+			oa << static_cast<const RequestFileAnswerCommand&>(*this);
+		}
+		catch(...) {
+			std::cout << "RequestFileAnswerCommand::Serialize" << std::endl;
+			throw;
+		}
 		return neuria::utility::String2ByteArray(ss.str());
 	}
 
@@ -48,7 +60,7 @@ private:
 	neuria::ByteArray file_byte_array;
 };
 
-auto operator<<(std::ostream& os,
+inline auto operator<<(std::ostream& os,
 		const RequestFileAnswerCommand& command) -> std::ostream& {
 	os << "FilePath: " << command.GetFilePath() 
 		<< "FileByteArray: ";
@@ -59,7 +71,7 @@ auto operator<<(std::ostream& os,
 }
 
 template<>
-auto GetCommandId<RequestFileAnswerCommand>() -> CommandId {
+inline auto GetCommandId<RequestFileAnswerCommand>() -> CommandId {
 	return CommandId("request_file_answer");
 }
 

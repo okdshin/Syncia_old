@@ -10,7 +10,7 @@
 namespace syncia
 {
 
-auto ParseFile(const FileSystemPath& download_directory_path, 
+inline auto ParseFile(const FileSystemPath& download_directory_path, 
 		const FileSystemPath& file_path, 
 		const neuria::ByteArray& file_byte_array) -> void {
 	std::ofstream ofs(

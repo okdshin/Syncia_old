@@ -24,17 +24,18 @@ int main(int argc, char* argv[])
 	const int buffer_size = 128;
 	const unsigned int max_key_hash_count = 30;
 	const unsigned int spread_key_hash_max_count = 200;
-	const unsigned int max_hop_count = 2;
+	const unsigned int max_hop_count = 6;
 
-	//std::stringstream no_output;
-	
+	std::stringstream no_output;
+	std::ostream& os = /*no_output;*/std::cout;
+
 	auto server = neuria::network::SocketServer::Create(
-		service, local_port, buffer_size, std::cout);
-	auto dispatcher = BehaviorDispatcher::Create(service, std::cout);
+		service, local_port, buffer_size, os);
+	auto dispatcher = BehaviorDispatcher::Create(service, os);
 	SetOnReceiveFuncOnly(server, dispatcher->GetOnReceiveFunc());
 
 	auto client = neuria::network::SocketClient::Create(
-		service, buffer_size, std::cout);
+		service, buffer_size, os);
 	
 	
 	auto upper_session_pool = neuria::network::SessionPool::Create();
@@ -101,12 +102,12 @@ int main(int argc, char* argv[])
 		});
 	
 	shell.Register("request", "hostname port id downloadpath: request file.", 
-		[syncia](const neuria::test::CuiShell::ArgList& args){
-			syncia->RequestFile(database::HashId(args.at(3)),
-				neuria::network::CreateSocketNodeId(
-					args.at(1), 
-					boost::lexical_cast<int>(args.at(2))),
-				FileSystemPath(args.at(4))
+		[syncia, file_db](const neuria::test::CuiShell::ArgList& args){
+			const auto file_key_hash = 
+				file_db->Get(boost::lexical_cast<unsigned int>(args.at(1)));
+			syncia->RequestFile(file_key_hash.GetHashId(),
+				file_key_hash.GetOwnerId(),
+				FileSystemPath("./")
 			);
 		});
 	

@@ -61,7 +61,7 @@ private:
 	
 };
 
-auto operator<<(std::ostream& os, 
+inline auto operator<<(std::ostream& os, 
 		const SearchKeyHashCommand& command) -> std::ostream& {
 	auto keyword_list = command.GetSearchKeywordList()();
 	os << "KeywordList:";
@@ -76,7 +76,7 @@ auto operator<<(std::ostream& os,
 }
 
 template<>
-auto GetCommandId<SearchKeyHashCommand>() -> CommandId {
+inline auto GetCommandId<SearchKeyHashCommand>() -> CommandId {
 	return CommandId("search_key_hash_command");
 }
 

@@ -19,14 +19,26 @@ public:
 		std::stringstream ss(neuria::utility::ByteArray2String(byte_array));
 		boost::archive::text_iarchive ia(ss);
 		auto command = RequestFileQueryCommand();
-		ia >> command;
+		try{
+			ia >> command;
+		}
+		catch(...){
+			std::cout << "RequestFileQueryCommand::Parse" << std::endl;
+			throw;	
+		}
 		return command;
 	}
 	
 	auto Serialize() const -> neuria::ByteArray {
 		std::stringstream ss;
 		boost::archive::text_oarchive oa(ss);
-		oa << static_cast<const RequestFileQueryCommand&>(*this);
+		try{
+			oa << static_cast<const RequestFileQueryCommand&>(*this);
+		}
+		catch(...){
+			std::cout << "RequestFileQueryCommand::Serialize" << std::endl;
+			throw;	
+		}
 		return neuria::utility::String2ByteArray(ss.str());
 	}
 
@@ -49,7 +61,7 @@ inline auto operator<<(std::ostream& os,
 }
 
 template<>
-auto GetCommandId<RequestFileQueryCommand>() -> CommandId {
+inline auto GetCommandId<RequestFileQueryCommand>() -> CommandId {
 	return CommandId("request_file_query");
 }
 

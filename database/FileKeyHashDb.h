@@ -110,6 +110,10 @@ public:
 		return *found;
 	}
 
+	auto Get(unsigned int index) -> FileKeyHash {
+		return this->hash_list.at(index);	
+	}
+
 	auto GetNewer(unsigned int max_count) -> FileKeyHashList {
 		if(max_count > this->hash_list.size()){
 			return this->hash_list;	
@@ -170,8 +174,8 @@ private:
 
 inline auto operator<<(std::ostream& os, 
 		const FileKeyHashDb::Pointer file_key_hash_db) -> std::ostream& {
-	for(const auto& key_hash : file_key_hash_db->hash_list){	
-		os << key_hash << std::endl;
+	for(unsigned int i = 0; i < file_key_hash_db->hash_list.size(); ++i){
+		os << "[" << i << "]:" << file_key_hash_db->hash_list.at(i) << "\n";
 	}
 
 	return os;

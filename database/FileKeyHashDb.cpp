@@ -9,6 +9,7 @@ using namespace syncia::database;
 int main(int argc, char* argv[])
 {
 	auto database = FileKeyHashDb::Create(0.3, 128, std::cout);
+
 	return 0;
 }
 

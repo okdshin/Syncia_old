@@ -55,7 +55,7 @@ private:
 	
 };
 
-auto operator<<(std::ostream& os, 
+inline auto operator<<(std::ostream& os, 
 		const SpreadKeyHashCommand& command) -> std::ostream& {
 	auto key_hash_list = command.GetSpreadKeyHashList();
 	os << "KeyHashList:";
@@ -65,7 +65,7 @@ auto operator<<(std::ostream& os,
 }
 
 template<>
-auto GetCommandId<SpreadKeyHashCommand>() -> CommandId {
+inline auto GetCommandId<SpreadKeyHashCommand>() -> CommandId {
 	return CommandId("spread_key_hash_command");
 }
 
