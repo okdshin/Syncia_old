@@ -22,7 +22,7 @@ public:
 		neuria::ByteArray (const neuria::ByteArray&)>;
 	using FetchAnswerRedirector = boost::function<
 		neuria::ByteArray (const neuria::ByteArray&)>;	
-	using OnReceiveFetchAnswerFunc = boost::function<
+	using OnReceivedFetchAnswerFunc = boost::function<
 		void (neuria::network::Session::Pointer, const neuria::ByteArray&)>;
 
 	static auto Create(
@@ -37,7 +37,7 @@ public:
 	
 	auto Bind(BehaviorDispatcher::Pointer dispatcher) -> void {
 		dispatcher->RegisterFunc(this->command_id,
-			boost::bind(&FetchBehavior::OnReceiveFetchCommand, 
+			boost::bind(&FetchBehavior::OnReceivedFetchCommand, 
 				this->shared_from_this(), _1, _2));
 	}
 
@@ -57,7 +57,7 @@ public:
 		this->fetch_answer_redirector = func;
 	}
 	
-	auto SetOnReceiveFetchAnswerFunc(OnReceiveFetchAnswerFunc func) -> void {
+	auto SetOnReceivedFetchAnswerFunc(OnReceivedFetchAnswerFunc func) -> void {
 		this->on_receive_fetch_answer_func = func;	
 	}
 
@@ -68,7 +68,7 @@ private:
 		to_session_pool(to_session_pool), os(os){}
 
 
-	auto OnReceiveFetchCommand(neuria::network::Session::Pointer session, 
+	auto OnReceivedFetchCommand(neuria::network::Session::Pointer session, 
 			const neuria::ByteArray& byte_array) -> void {
 		auto fetch_command = command::FetchCommand::Parse(byte_array);
 		fetch_command.AddRoute(this->node_id);
@@ -128,7 +128,7 @@ private:
 	IsTurningPointDecider is_turning_point_decider;
 	FetchQueryRedirector fetch_query_redirector;
 	FetchAnswerRedirector fetch_answer_redirector;
-	OnReceiveFetchAnswerFunc on_receive_fetch_answer_func;
+	OnReceivedFetchAnswerFunc on_receive_fetch_answer_func;
 	neuria::utility::RandomElementSelector at_random_selector;
 	neuria::network::Client::Pointer client;
 	

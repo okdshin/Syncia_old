@@ -55,10 +55,8 @@ private:
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive& ar, unsigned int ver){	
-		std::cout << "FileKeyHash serializing..." << std::endl;
 		ar & hash_id & keyword & owner_id 
 			& file_path_str & birth_universal_time_str;
-		std::cout << "FileKeyHash serializing finished!!" << std::endl;
 	}
 	
 	HashId::WrappedType hash_id;

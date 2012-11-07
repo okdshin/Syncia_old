@@ -19,13 +19,14 @@ public:
 		return Pointer(new LinkBehavior(pool, link_command_id, os));
 	}
 
-	auto SetOnReceiveLinkQueryFunc(neuria::network::Session::OnReceiveFunc func) -> void {
+	auto SetOnReceivedLinkQueryFunc(
+			neuria::network::Session::OnReceivedFunc func) -> void {
 		this->on_receive_link_query_func = func;
 	}
 
 	auto Bind(BehaviorDispatcher::Pointer dispatcher) -> void {
 		dispatcher->RegisterFunc(link_command_id,
-			boost::bind(&LinkBehavior::OnReceiveLinkQuery, 
+			boost::bind(&LinkBehavior::OnReceivedLinkQuery, 
 				this->shared_from_this(), _1, _2));
 	}
 
@@ -37,9 +38,21 @@ private:
     LinkBehavior(neuria::network::SessionPool::Pointer pool, 
 			const command::CommandId& link_command_id, 
 			std::ostream& os) 
-		: pool(pool), link_command_id(link_command_id), os(os){}
+		: pool(pool), link_command_id(link_command_id), os(os){
 	
-	auto OnReceiveLinkQuery(neuria::network::Session::Pointer session, 
+		this->SetOnReceivedLinkQueryFunc(
+			[this](neuria::network::Session::Pointer session, 
+					const neuria::ByteArray& byte_array){
+				this->os << "on receive link query. wrapped byte is...\n" 
+				<< neuria::utility::ByteArray2String(byte_array) << "\n" 
+				<< "(this is default "
+				<< "\"syncia::LinkBehavior::OnReceivedLinkQueryFunc\")" <<std::endl;
+			}
+		);
+
+	}
+	
+	auto OnReceivedLinkQuery(neuria::network::Session::Pointer session, 
 			const neuria::ByteArray& byte_array) -> void {
 		this->os << "on receive link query." << std::endl;
 		auto command = command::LinkCommand::Parse(byte_array);
@@ -53,7 +66,7 @@ private:
 		this->on_receive_link_query_func(session, command.GetWrappedByteArray());
 	}
 
-	neuria::network::Session::OnReceiveFunc on_receive_link_query_func;
+	neuria::network::Session::OnReceivedFunc on_receive_link_query_func;
 	neuria::network::SessionPool::Pointer pool;
 	neuria::network::Client::Pointer client;
 	command::CommandId link_command_id;

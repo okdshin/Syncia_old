@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 	auto server = neuria::network::SocketServer::Create(
 		service, local_port, buffer_size, std::cout);
 	auto dispatcher = BehaviorDispatcher::Create(service, std::cout);
-	SetOnReceiveFuncOnly(server, dispatcher->GetOnReceiveFunc());
+	SetOnReceivedFuncOnly(server, dispatcher->GetOnReceivedFunc());
 	
 	auto client = neuria::network::SocketClient::Create(service, buffer_size, std::cout);
 
@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 
 	auto link_behavior = LinkBehavior::Create(pool, 
 		command::CommandId("test link query command"), std::cout);
-	link_behavior->SetOnReceiveLinkQueryFunc(
+	link_behavior->SetOnReceivedLinkQueryFunc(
 		[](neuria::network::Session::Pointer session, const neuria::ByteArray& byte_array){
 			std::cout << neuria::utility::ByteArray2String(byte_array) << std::endl;	
 		});

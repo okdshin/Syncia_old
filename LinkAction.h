@@ -19,12 +19,16 @@ public:
 	static auto Create(const command::CommandId& command_id, 
 			neuria::network::SessionPool::Pointer linked_session_pool, 
 			const neuria::network::NodeId& node_id,
-			OnFailedCreateLinkFunc on_failed_create_link_func, 
 			std::ostream& os) -> Pointer {
 		return Pointer(new LinkAction(
-			command_id, linked_session_pool, node_id, on_failed_create_link_func, os));
+			command_id, linked_session_pool, node_id, os));
 	}
-	
+
+	auto SetOnFailedCreateLinkFunc(
+			OnFailedCreateLinkFunc on_failed_create_link_func) -> void {
+		this->on_failed_create_link_func = on_failed_create_link_func;
+	}
+
 	auto Bind(neuria::network::Client::Pointer client) -> void {
 		this->client = client;
 	}
@@ -60,10 +64,18 @@ private:
 	LinkAction(const command::CommandId& command_id, 
 		neuria::network::SessionPool::Pointer pool, 
 		const neuria::network::NodeId& node_id, 
-		neuria::network::Client::OnFailedConnectFunc on_failed_create_link_func, 
 		std::ostream& os) 
-		: command_id(command_id), pool(pool), node_id(node_id), 
-		on_failed_create_link_func(on_failed_create_link_func), os(os){}
+		: command_id(command_id), pool(pool), node_id(node_id), os(os){
+	
+		this->SetOnFailedCreateLinkFunc(
+			[this](const neuria::network::ErrorCode& error_code){
+				std::cout 
+					<< "create link failed. (this is default "
+					<< "\"syncia::LinkAction::FailedCreateLincFunc\"):" 
+					<< error_code << std::endl;
+			}
+		);
+	}
 
 	neuria::network::Client::Pointer client;
 	command::CommandId command_id;

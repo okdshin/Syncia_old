@@ -31,16 +31,18 @@ public:
 		return Pointer(new RequestFileAction(os));
 	}
 
+	auto SetOnRepliedFileFunc(OnRepliedFileFunc on_replied_file_func) -> void {
+		this->on_replied_file_func = on_replied_file_func;
+	}
+
 	auto Bind(neuria::network::Client::Pointer client) -> void {
 		this->client = client;	
 	}
 
 	auto RequestFile(const database::HashId& hash_id, 
 			const neuria::network::NodeId& node_id, 
-			const FileSystemPath& download_directory_path,
-			OnRepliedFileFunc on_replied_file_func) -> void {
-		//neuria::network::
-		Communicate(this->client, node_id,
+			const FileSystemPath& download_directory_path) -> void {
+		neuria::network::Communicate(this->client, node_id,
 			[this](const neuria::network::ErrorCode& error_code){
 				this->os << "failed connect to request file: " 
 					<< error_code << std::endl;
@@ -49,14 +51,14 @@ public:
 				command::GetCommandId<command::RequestFileQueryCommand>(),
 				command::RequestFileQueryCommand(hash_id).Serialize()
 			).Serialize(),
-			[this, download_directory_path, on_replied_file_func](neuria::network::Session::Pointer session, 
+			[this, download_directory_path](neuria::network::Session::Pointer session, 
 					const neuria::ByteArray& byte_array){
 				auto command = command::RequestFileAnswerCommand::Parse(byte_array);
 				ParseFile(download_directory_path, command.GetFilePath(), 
 					command.GetFileByteArray());
 				this->os << "replied file!: " 
 					<< command.GetFilePath().filename() << std::endl;
-				on_replied_file_func(command.GetFilePath());
+				this->on_replied_file_func(command.GetFilePath());
 			},
 			[](neuria::network::Session::Pointer){}
 		);
@@ -64,8 +66,18 @@ public:
 
 
 private:
-    RequestFileAction(std::ostream& os) : os(os){}
+    RequestFileAction(std::ostream& os) : os(os){
+		this->SetOnRepliedFileFunc(
+			[this](const FileSystemPath& file_path){
+				this->os << "file \"" << file_path 
+					<< "\" was replied! (this is default " 
+					<< "\"syncia::RequestFileAction::OnRepliedFileFunc\")" 
+					<< std::endl;
+			}
+		);	
+	}
 
+	OnRepliedFileFunc on_replied_file_func;
 	neuria::network::Client::Pointer client;
 	std::ostream& os;
 };

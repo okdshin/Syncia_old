@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 	auto server = neuria::network::SocketServer::Create(
 		service, local_port, buffer_size, std::cout);
 	auto dispatcher = BehaviorDispatcher::Create(service, std::cout);
-	SetOnReceiveFuncOnly(server, dispatcher->GetOnReceiveFunc());
+	SetOnReceivedFuncOnly(server, dispatcher->GetOnReceivedFunc());
 
 	auto client = neuria::network::SocketClient::Create(service, buffer_size, std::cout);
 	
@@ -37,15 +37,16 @@ int main(int argc, char* argv[])
 	auto node_id = neuria::network::CreateSocketNodeId("127.0.0.1", local_port);
 	
 	auto file_db = database::FileKeyHashDb::Create(0.3, buffer_size, std::cout);
+	auto searched_file_db = database::FileKeyHashDb::Create(0.3, buffer_size, std::cout);
 	
 	auto search_key_hash_behavior = 
 		SearchKeyHashBehavior::Create(node_id, max_key_hash_count, max_hop_count, 
-			upper_pool, file_db, std::cout);	
+			upper_pool, file_db, searched_file_db, std::cout);	
 	search_key_hash_behavior->Bind(dispatcher);
 	
 	auto link_behavior = LinkBehavior::Create(lower_pool, 
 		command::CommandId("test link query command"), std::cout);
-	link_behavior->SetOnReceiveLinkQueryFunc(
+	link_behavior->SetOnReceivedLinkQueryFunc(
 		[](neuria::network::Session::Pointer session, const neuria::ByteArray& byte_array){
 			std::cout << neuria::utility::ByteArray2String(byte_array) << std::endl;	
 		});

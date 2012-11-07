@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
 	boost::thread t(boost::bind(&boost::asio::io_service::run, &service));
 	auto server = neuria::network::SocketServer::Create(service, 54321, 128, std::cout);
 	auto dispatcher = BehaviorDispatcher::Create(service, std::cout);
-	SetOnReceiveFuncOnly(server, dispatcher->GetOnReceiveFunc());
+	SetOnReceivedFuncOnly(server, dispatcher->GetOnReceivedFunc());
 	std::cout << dispatcher << std::endl;
 	server->StartAccept();
 	t.join();

@@ -32,11 +32,10 @@ int main(int argc, char* argv[])
 	auto server = neuria::network::SocketServer::Create(
 		service, local_port, buffer_size, os);
 	auto dispatcher = BehaviorDispatcher::Create(service, os);
-	SetOnReceiveFuncOnly(server, dispatcher->GetOnReceiveFunc());
+	SetOnReceivedFuncOnly(server, dispatcher->GetOnReceivedFunc());
 
 	auto client = neuria::network::SocketClient::Create(
 		service, buffer_size, os);
-	
 	
 	auto upper_session_pool = neuria::network::SessionPool::Create();
 	auto lower_session_pool = neuria::network::SessionPool::Create();
@@ -47,13 +46,7 @@ int main(int argc, char* argv[])
 	auto syncia = SynciaCore::Create(
 		max_key_hash_count, spread_key_hash_max_count, max_hop_count, buffer_size, 
 		upper_session_pool, lower_session_pool, file_db, searched_file_db, 
-		node_id, 
-		[](const neuria::network::ErrorCode& error_code){
-			std::cout << "failed create link : " << error_code << std::endl;
-		},
-		[](const FileSystemPath& file_path){
-			std::cout << "replied! :" << file_path << std::endl;
-		}, std::cout);
+		node_id, std::cout);
 	syncia->Bind(client);
 	syncia->Bind(dispatcher);
 	auto multiple_timer = neuria::timer::MultipleTimer::Create(service);

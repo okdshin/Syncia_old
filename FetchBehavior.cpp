@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 	auto server = neuria::network::SocketServer::Create(
 		service, local_port, buffer_size, std::cout);
 	auto dispatcher = BehaviorDispatcher::Create(service, std::cout);
-	SetOnReceiveFuncOnly(server, dispatcher->GetOnReceiveFunc());
+	SetOnReceivedFuncOnly(server, dispatcher->GetOnReceivedFunc());
 
 	auto accepted_pool = neuria::network::SessionPool::Create();
 	auto connected_pool = neuria::network::SessionPool::Create();
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 			return byte_array;
 		});
 	
-	fetch_behavior1->SetOnReceiveFetchAnswerFunc(
+	fetch_behavior1->SetOnReceivedFetchAnswerFunc(
 		[](neuria::network::Session::Pointer session, const neuria::ByteArray& byte_array){
 			std::cout << "got answer!!" << std::endl;
 		});
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 			return byte_array;
 		});
 	
-	fetch_behavior2->SetOnReceiveFetchAnswerFunc(
+	fetch_behavior2->SetOnReceivedFetchAnswerFunc(
 		[](neuria::network::Session::Pointer session, const neuria::ByteArray& byte_array){
 			std::cout << "got answer!!" << std::endl;
 		});
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 	
 	auto link_behavior = LinkBehavior::Create(accepted_pool, 
 		command::CommandId("link"), std::cout);
-	link_behavior->SetOnReceiveLinkQueryFunc(
+	link_behavior->SetOnReceivedLinkQueryFunc(
 		[](neuria::network::Session::Pointer session, const neuria::ByteArray& byte_array){
 			std::cout << neuria::utility::ByteArray2String(byte_array) << std::endl;	
 		});

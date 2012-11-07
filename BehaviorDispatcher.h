@@ -19,12 +19,12 @@ public:
 	}
 	
 	auto RegisterFunc(const command::CommandId& command_id, 
-			neuria::network::Session::OnReceiveFunc func) -> void{
+			neuria::network::Session::OnReceivedFunc func) -> void{
 		std::cout << "registered " << command_id << std::endl;
 		this->func_dict[command_id()] = func;
 	}
 	
-	auto GetOnReceiveFunc() -> neuria::network::Session::OnReceiveFunc {
+	auto GetOnReceivedFunc() -> neuria::network::Session::OnReceivedFunc {
 		return boost::bind(
 			&BehaviorDispatcher::Dispatch, this->shared_from_this(), _1, _2);
 	}
@@ -58,7 +58,7 @@ private:
 		std::ostream& os, const BehaviorDispatcher& dispatcher) -> std::ostream&;
 
 	boost::asio::io_service& service;
-	std::map<command::CommandId::WrappedType, neuria::network::Session::OnReceiveFunc> func_dict;
+	std::map<command::CommandId::WrappedType, neuria::network::Session::OnReceivedFunc> func_dict;
 	std::ostream& os;
 };
 

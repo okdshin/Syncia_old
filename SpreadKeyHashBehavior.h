@@ -59,8 +59,8 @@ private:
 		fetch_behavior->SetFetchAnswerRedirector(boost::bind(
 			&SpreadKeyHashBehavior::RedirectFetchAnswer, this->shared_from_this(), _1));
 		
-		fetch_behavior->SetOnReceiveFetchAnswerFunc(boost::bind(
-			&SpreadKeyHashBehavior::OnReceiveFetchAnswer, this->shared_from_this(), 
+		fetch_behavior->SetOnReceivedFetchAnswerFunc(boost::bind(
+			&SpreadKeyHashBehavior::OnReceivedFetchAnswer, this->shared_from_this(), 
 			_1, _2));	
 	}
 
@@ -84,7 +84,7 @@ private:
 		return command.Serialize();
 	}
 
-	auto OnReceiveFetchAnswer(neuria::network::Session::Pointer session, 
+	auto OnReceivedFetchAnswer(neuria::network::Session::Pointer session, 
 			const neuria::ByteArray& byte_array) -> void {
 		auto command = command::SpreadKeyHashCommand::Parse(byte_array);
 		this->file_db->Add(command.GetSpreadKeyHashList());

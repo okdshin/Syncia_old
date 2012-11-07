@@ -15,6 +15,7 @@ class SearchKeyHashBehavior :
 		public boost::enable_shared_from_this<SearchKeyHashBehavior> {
 public:
 	using Pointer = boost::shared_ptr<SearchKeyHashBehavior>;
+	using OnReceivedAnswerFunc = boost::function<void (const database::FileKeyHashList&)>;
 
 	static auto Create(const neuria::network::NodeId& node_id, 
 			unsigned int max_key_hash_count, unsigned int max_hop_count, 
@@ -34,6 +35,10 @@ public:
 		return search_key_hash_behavior;
 	}
 
+	auto SetOnReceivedAnswerFunc(OnReceivedAnswerFunc on_receive_answer_func) -> void {
+		this->on_receive_answer_func = on_receive_answer_func;	
+	}
+
 	auto Bind(BehaviorDispatcher::Pointer dispatcher) -> void {
 		this->fetch_behavior->Bind(dispatcher);
 	}
@@ -50,7 +55,12 @@ private:
 		std::ostream& os) 
 			: fetch_behavior(fetch_behavior), max_key_hash_count(max_key_hash_count), 
 			max_hop_count(max_hop_count), file_db(file_db), 
-			searched_file_db(searched_file_db), os(os){}
+			searched_file_db(searched_file_db), os(os){
+				
+			this->SetOnReceivedAnswerFunc(
+				[this](const database::FileKeyHashList&){ 
+					this->os << "on received answer!!" << std::endl; });
+		}
 
 	auto BindToFetchBehavior(FetchBehavior::Pointer fetch_behavior) -> void {
 		fetch_behavior->SetIsTurningPointDecider(boost::bind(
@@ -63,8 +73,8 @@ private:
 		fetch_behavior->SetFetchAnswerRedirector(boost::bind(
 			&SearchKeyHashBehavior::RedirectFetchAnswer, this->shared_from_this(), _1));
 		
-		fetch_behavior->SetOnReceiveFetchAnswerFunc(boost::bind(
-			&SearchKeyHashBehavior::OnReceiveFetchAnswer, this->shared_from_this(), 
+		fetch_behavior->SetOnReceivedFetchAnswerFunc(boost::bind(
+			&SearchKeyHashBehavior::OnReceivedFetchAnswer, this->shared_from_this(), 
 			_1, _2));	
 	}
 
@@ -90,13 +100,15 @@ private:
 		return command.Serialize();
 	}
 
-	auto OnReceiveFetchAnswer(neuria::network::Session::Pointer session, 
+	auto OnReceivedFetchAnswer(neuria::network::Session::Pointer session, 
 			const neuria::ByteArray& byte_array) -> void {
 		auto command = command::SearchKeyHashCommand::Parse(byte_array);
 		this->file_db->Add(command.GetFoundKeyHashList());
 		this->searched_file_db->Add(command.GetFoundKeyHashList());
 		std::cout << "on receive fetch answer : " << file_db << std::endl;
 		std::cout << "got answer" << std::endl;
+		
+		this->on_receive_answer_func(command.GetFoundKeyHashList());
 	}
 
 	FetchBehavior::Pointer fetch_behavior;
@@ -104,6 +116,7 @@ private:
 	unsigned int max_hop_count;
 	database::FileKeyHashDb::Pointer file_db;
 	database::FileKeyHashDb::Pointer searched_file_db;
+	OnReceivedAnswerFunc on_receive_answer_func;
 	std::ostream& os;
 };
 

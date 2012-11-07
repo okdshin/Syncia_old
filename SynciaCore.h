@@ -35,21 +35,15 @@ public:
 			database::FileKeyHashDb::Pointer file_db, 
 			database::FileKeyHashDb::Pointer searched_file_db, 
 			const neuria::network::NodeId& node_id, 
-			LinkAction::OnFailedCreateLinkFunc on_failed_create_link_func,
-			RequestFileAction::OnRepliedFileFunc on_replied_file_func,
 			std::ostream& os) -> Pointer {
 		auto upload_action = UploadAction::Create(file_db, node_id, os);
 		
 		auto fetch_link_action = LinkAction::Create(
 			command::GetCommandId<command::LinkForFetchKeyHashCommand>(), 
-			upper_session_pool, node_id, on_failed_create_link_func, os);
+			upper_session_pool, node_id, os);
 		
 		auto fetch_link_behavior = LinkBehavior::Create(lower_session_pool, 
 			command::GetCommandId<command::LinkForFetchKeyHashCommand>(), os);
-		fetch_link_behavior->SetOnReceiveLinkQueryFunc(
-			[](neuria::network::Session::Pointer, const neuria::ByteArray&){
-				std::cout << "hello" << std::endl;		
-			});
 
 		auto search_key_hash_action = 
 			SearchKeyHashAction::Create(upper_session_pool, node_id, os);
@@ -64,10 +58,8 @@ public:
 			lower_session_pool, file_db, os);
 
 		auto request_file_action = RequestFileAction::Create(os);
-		auto request_file_behavior = RequestFileBehavior::Create(buffer_size, 
-			[file_db](const database::HashId& hash_id) -> FileSystemPath {
-				return file_db->Get(hash_id).GetFilePath();
-			}, os);
+		auto request_file_behavior = RequestFileBehavior::Create(
+			buffer_size, file_db, os);
 
 		return Pointer(new SynciaCore(upload_action, 
 			fetch_link_action, fetch_link_behavior, 
@@ -75,8 +67,22 @@ public:
 			spread_key_hash_action, spread_key_hash_behavior,
 			request_file_action, request_file_behavior,
 			file_db, node_id, 
-			on_replied_file_func,
 			os));
+	}
+
+	auto SetOnFailedCreateSearchLinkFunc(
+			LinkAction::OnFailedCreateLinkFunc on_failed_create_link_func) -> void {
+		this->fetch_link_action->SetOnFailedCreateLinkFunc(
+			on_failed_create_link_func);
+	}
+
+	auto SetOnReceivedSearchKeyHashAnswerFunc() -> void {
+		
+	}
+
+	auto SetOnRepliedFileFunc(
+			RequestFileAction::OnRepliedFileFunc on_replied_file_func) -> void {
+		this->request_file_action->SetOnRepliedFileFunc(on_replied_file_func);
 	}
 
 	auto AddUploadDirectory(const FileSystemPath& upload_directory_path) -> void {
@@ -120,7 +126,7 @@ public:
 			const neuria::network::NodeId& node_id, 
 			const FileSystemPath& download_directory_path) -> void {
 		this->request_file_action->RequestFile(hash_id, node_id, 
-			download_directory_path, this->on_replied_file_func);
+			download_directory_path);
 	}
 
 	auto Bind(neuria::network::Client::Pointer client) -> void {
@@ -142,7 +148,6 @@ public:
 		this->multiple_timer = multiple_timer;
 		this->multiple_timer->AddCallbackFuncAndStartTimer(10, 
 			[this]() -> neuria::timer::IsContinue {
-				//this->file_db->UpdateBirthTime();
 				this->file_db->Apply(
 					[this](database::FileKeyHash& key_hash){ 
 						if(key_hash.GetOwnerId() == this->node_id){
@@ -168,7 +173,6 @@ private:
 		RequestFileBehavior::Pointer request_file_behavior,
 		database::FileKeyHashDb::Pointer file_db,
 		const neuria::network::NodeId& node_id, 
-		RequestFileAction::OnRepliedFileFunc on_replied_file_func,
 		std::ostream& os) 
 			:upload_action(upload_action), 
 			fetch_link_action(fetch_link_action), 
@@ -180,7 +184,7 @@ private:
 			request_file_action(request_file_action),
 			request_file_behavior(request_file_behavior),
 			file_db(file_db), node_id(node_id), 
-			on_replied_file_func(on_replied_file_func), os(os){
+			os(os){
 		
 	}
 
@@ -203,8 +207,6 @@ private:
 
 	database::FileKeyHashDb::Pointer file_db;
 	neuria::network::NodeId node_id;
-
-	RequestFileAction::OnRepliedFileFunc on_replied_file_func;
 
 	std::ostream& os;
 };
