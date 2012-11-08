@@ -134,14 +134,13 @@ private:
 		else {
 			fetch_command.AddRoute(this->node_id);
 			if(this->to_session_pool->IsEmpty()){
-				if(fetch_command.IsReturnBackToStart(this->node_id)){
+				if(!fetch_command.IsReturnBackToStart(this->node_id)){
 					this->os << 
 						"...but no link. so immediately return back." << std::endl;
 					this->ReturnBack(fetch_command);	
 				}
 				else {
-					this->Query(fetch_command);
-					//this->Assert();
+					this->Assert();
 				}	
 			}
 			else {
