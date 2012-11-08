@@ -138,7 +138,8 @@ private:
 					this->ReturnBack(fetch_command);	
 				}
 				else {
-					this->Assert();
+					this->Query(fetch_command);
+					//this->Assert();
 				}	
 			}
 			else {
