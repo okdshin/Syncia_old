@@ -101,6 +101,8 @@ private:
 		this->os << fetch_command << std::endl;
 		auto redirect_byte_array = this->fetch_query_redirector(
 			fetch_command.GetWrappedByteArray());
+		std::cout << "to session pool:" << this->to_session_pool << std::endl;
+		assert(!this->to_session_pool->IsEmpty());
 		this->at_random_selector(*(this->to_session_pool))->Send(
 			command::DispatchCommand(
 				this->command_id,
