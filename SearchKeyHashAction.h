@@ -25,7 +25,6 @@ public:
 	}
 
 	auto SearchKeyHash(database::KeywordList search_keyword_list) -> void {
-		//assert(!search_keyword_list().empty());
 		if(search_keyword_list().empty()){
 			auto wrapped_keyword_list = search_keyword_list();
 			wrapped_keyword_list.push_back("");

@@ -36,8 +36,7 @@ int main(int argc, char* argv[])
 	auto lower_pool = neuria::network::SessionPool::Create();
 	auto node_id = neuria::network::CreateSocketNodeId("127.0.0.1", local_port);
 	
-	auto file_db = database::FileKeyHashDb::Create(0.3, buffer_size, std::cout);
-	
+	auto file_db = database::FileKeyHashDb::Create(0.3, buffer_size, std::cout);	
 	auto spread_key_hash_behavior = 
 		SpreadKeyHashBehavior::Create(node_id, max_key_hash_count, max_hop_count, 
 			upper_pool, file_db, std::cout);	
@@ -51,31 +50,30 @@ int main(int argc, char* argv[])
 		});
 	link_behavior->Bind(dispatcher);
 	
-	auto link_action = LinkAction::Create(upper_pool, std::cout);
+	auto link_action = LinkAction::Create(command::CommandId("test link query command"), upper_pool, node_id, std::cout);
 	link_action->Bind(client);
 
-	auto shell = nr::utl::Shell(std::cout);
-	nr::utl::RegisterExitFunc(shell);
+	auto shell = neuria::test::CuiShell(std::cout);
+	neuria::test::RegisterExitFunc(shell);
 	shell.Register("link", ": create new link.", 
-		[link_action](const nr::utl::Shell::ArgumentList& argument_list){
+		[link_action](const neuria::test::CuiShell::ArgList& argument_list){
 			link_action->CreateLink(
-				nr::utl::CreateSocketNodeId(
+				neuria::network::CreateSocketNodeId(
 					argument_list.at(1), 
 					boost::lexical_cast<int>(argument_list.at(2))),
-				command::CommandId("test link query command"),
-				nr::utl::String2ByteArray("link please!! 12345"));
+				neuria::utility::String2ByteArray("link please!! 12345"));
 		});
 
 	auto spread_key_hash_action = 
 		SpreadKeyHashAction::Create(upper_pool, node_id, std::cout);
 	shell.Register("fetch", ": fetch",
 		[spread_key_hash_action]
-		(const nr::utl::Shell::ArgumentList& argument_list){
+		(const neuria::test::CuiShell::ArgList& argument_list){
 			spread_key_hash_action->RequestSpreadKeyHash();
 		});
 	
 	shell.Register("db", ": show db",
-		[file_db](const nr::utl::Shell::ArgumentList& argument_list){
+		[file_db](const neuria::test::CuiShell::ArgList& argument_list){
 			std::cout << file_db << std::endl;
 		});
 	

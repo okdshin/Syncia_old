@@ -76,8 +76,9 @@ public:
 			on_failed_create_link_func);
 	}
 
-	auto SetOnReceivedSearchKeyHashAnswerFunc() -> void {
-		
+	auto SetOnReceivedSearchKeyHashAnswerFunc(
+			SearchKeyHashBehavior::OnReceivedAnswerFunc on_received_func) -> void {
+		this->search_key_hash_behavior->SetOnReceivedAnswerFunc(on_received_func);
 	}
 
 	auto SetOnRepliedFileFunc(
@@ -86,7 +87,8 @@ public:
 	}
 
 	auto AddUploadDirectory(const FileSystemPath& upload_directory_path) -> void {
-		auto watcher = filesystem::AddRemoveFileInDirectoryWatcher(upload_directory_path);
+		auto watcher = 
+			filesystem::AddRemoveFileInDirectoryWatcher::Create(upload_directory_path);
 		filesystem::SetOnAddedFileFunc(watcher, 
 			[this](const FileSystemPath& file_path){
 				this->shared_from_this()->upload_action->UploadFile(file_path);
@@ -97,13 +99,13 @@ public:
 				this->shared_from_this()->file_db->Erase(file_path);
 			}
 		);
-		this->add_remove_watcher_list.push_back(watcher);
+		//this->add_remove_watcher_list.push_back(watcher);
 		this->multiple_timer->AddCallbackFuncAndStartTimer(
 			1,
-			[this]() -> neuria::timer::IsContinue {
-				this->add_remove_watcher_list.back().Check();
-				this->add_remove_watcher_list.back().Call();
-				this->add_remove_watcher_list.back().Update();
+			[watcher]() -> neuria::timer::IsContinue {
+				watcher->Check();
+				watcher->Call();
+				watcher->Update();
 				return neuria::timer::IsContinue(true);
 			}
 		);
@@ -146,7 +148,8 @@ public:
 	
 	auto Bind(neuria::timer::MultipleTimer::Pointer multiple_timer) -> void {
 		this->multiple_timer = multiple_timer;
-		this->multiple_timer->AddCallbackFuncAndStartTimer(10, 
+		this->multiple_timer->AddCallbackFuncAndStartTimer(
+			10, 
 			[this]() -> neuria::timer::IsContinue {
 				this->file_db->Apply(
 					[this](database::FileKeyHash& key_hash){ 

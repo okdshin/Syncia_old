@@ -46,20 +46,20 @@ public:
 		return neuria::utility::String2ByteArray(ss.str());
 	}
 	
-	auto IsAnswer() -> bool { return is_answer; }
+	auto IsAnswer() const -> bool { return is_answer; }
 	auto AddRoute(const neuria::network::NodeId& node_id) -> void {
 		this->route_node_id_list.push_back(node_id);
 	}
-	auto GetRoute()const -> Route { return route_node_id_list; }
+	auto GetRoute() const -> Route { return route_node_id_list; }
 
-	auto GetWrappedByteArray() -> neuria::ByteArray { return byte_array; }
+	auto GetWrappedByteArray() const -> neuria::ByteArray { return byte_array; }
 
-	auto IsReturnBackToStart(const neuria::network::NodeId& node_id) -> bool {
+	auto IsReturnBackToStart(const neuria::network::NodeId& node_id) const -> bool {
 		return this->is_answer && route_node_id_list.front() == node_id;	
 	}
 
-	auto GetOneStepCloserNodeId(const neuria::network::NodeId& node_id) -> neuria::network::NodeId {
-		auto self_iter = std::find(this->route_node_id_list.begin(), 
+	auto GetOneStepCloserNodeId(const neuria::network::NodeId& node_id) const -> neuria::network::NodeId {
+		auto self_iter = std::find(this->route_node_id_list.begin()+1, 
 			this->route_node_id_list.end(), node_id);
 		assert("not found self node id in route." 
 			&& self_iter != this->route_node_id_list.end());
@@ -86,7 +86,7 @@ private:
 
 inline auto operator<<(std::ostream& os, 
 		const FetchCommand& command) -> std::ostream& {
-	os << "is answer:" << command.is_answer;
+	os << "(this is fetch command) is answer:" << command.is_answer << " ";
 	std::copy(command.route_node_id_list.begin(), 
 		command.route_node_id_list.end(), std::ostream_iterator<neuria::network::NodeId>(os, " "));
 	os << "\n";

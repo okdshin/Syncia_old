@@ -20,19 +20,19 @@ int main(int argc, char* argv[])
 	}
 
 	const int buffer_size = 128;
-	const unsigned int max_hop_count = 3;
+	const unsigned int max_hop_count = 6;
 
 	std::stringstream no_output;
 	
 	auto server = neuria::network::SocketServer::Create(
-		service, local_port, buffer_size, std::cout);
-	auto dispatcher = BehaviorDispatcher::Create(service, std::cout);
+		service, local_port, buffer_size, no_output);
+	auto dispatcher = BehaviorDispatcher::Create(service, no_output);
 	SetOnReceivedFuncOnly(server, dispatcher->GetOnReceivedFunc());
 
 	auto accepted_pool = neuria::network::SessionPool::Create();
 	auto connected_pool = neuria::network::SessionPool::Create();
 	auto node_id = neuria::network::CreateSocketNodeId("127.0.0.1", local_port);
-	auto client = neuria::network::SocketClient::Create(service, buffer_size, std::cout);
+	auto client = neuria::network::SocketClient::Create(service, buffer_size, no_output);
 	
 	auto fetch_behavior1 = FetchBehavior::Create(
 		command::CommandId("fetch1_command"), node_id, accepted_pool, std::cout);
@@ -104,7 +104,8 @@ int main(int argc, char* argv[])
 	
 	server->StartAccept();
 
-	auto link_action = LinkAction::Create(command::CommandId("link"), connected_pool, node_id, [](const neuria::network::ErrorCode&){}, std::cout);
+	auto link_action = LinkAction::Create(command::CommandId("link"), connected_pool, 
+		node_id, std::cout);
 	
 	link_action->Bind(client);
 

@@ -28,12 +28,12 @@ int main(int argc, char* argv[])
 	shell.Register("upf", "<filepath> (<keyward>): upload file.", 
 		[upload_action](const neuria::test::CuiShell::ArgList& argument_list){
 			auto file_path = boost::filesystem::path(argument_list.at(1));
-			database::Keyward::WrappedType keyward;
+			database::Keyword::WrappedType keyword;
 			if(argument_list.size() == 2){
-				keyward = file_path.filename().string();
+				keyword = file_path.filename().string();
 			}
 			else{
-				keyward = argument_list.at(2);
+				keyword = argument_list.at(2);
 			}
 			upload_action->UploadFile(file_path);
 		});

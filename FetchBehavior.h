@@ -67,59 +67,88 @@ private:
 		: command_id(command_id()), node_id(node_id), 
 		to_session_pool(to_session_pool), os(os){}
 
+	auto ReturnBack(const command::FetchCommand& fetch_command) -> void {
+		this->os << "ReturnBack" << std::endl;
+		this->os << fetch_command << std::endl;
+		assert(this->client != nullptr);
+		neuria::network::Send(this->client,
+			fetch_command.GetOneStepCloserNodeId(this->node_id),	
+			command::DispatchCommand(
+				this->command_id,
+				command::FetchCommand(
+					command::IsAnswer(true), fetch_command.GetRoute(), 
+					this->fetch_answer_redirector(
+						fetch_command.GetWrappedByteArray())
+				).Serialize()
+			).Serialize(),
+			[this](const neuria::network::ErrorCode& error_code){
+				this->os << "failed connect to answer. : " 
+					<< error_code << std::endl;	
+			}
+		);
+	}
+
+	auto Get(neuria::network::Session::Pointer session, 
+			const command::FetchCommand& fetch_command) -> void {
+		this->os << "Get" << std::endl;
+		this->os << fetch_command << std::endl;
+		this->on_receive_fetch_answer_func(session,
+			fetch_command.GetWrappedByteArray());
+	}
+
+	auto Query(const command::FetchCommand& fetch_command) -> void {
+		this->os << "Query" << std::endl;
+		this->os << fetch_command << std::endl;
+		auto redirect_byte_array = this->fetch_query_redirector(
+			fetch_command.GetWrappedByteArray());
+		this->at_random_selector(*(this->to_session_pool))->Send(
+			command::DispatchCommand(
+				this->command_id,
+				command::FetchCommand(
+					command::IsAnswer(false), fetch_command.GetRoute(), 
+					redirect_byte_array
+				).Serialize()
+			).Serialize(),
+			[](neuria::network::Session::Pointer){}
+		);
+	}
+
+	auto Assert() -> void {
+		assert(!"invalid state.");	
+	}
 
 	auto OnReceivedFetchCommand(neuria::network::Session::Pointer session, 
 			const neuria::ByteArray& byte_array) -> void {
 		auto fetch_command = command::FetchCommand::Parse(byte_array);
-		fetch_command.AddRoute(this->node_id);
-		if(fetch_command.IsReturnBackToStart(this->node_id)){ //When Finished
-			this->os << "on receive finished answer." << std::endl;
-			this->on_receive_fetch_answer_func(session,
-				fetch_command.GetWrappedByteArray());
-		}
-		else{ 
-			if(fetch_command.IsAnswer()){ //When Answer
-				this->os << "on receive fetch answer." << std::endl;
-				std::cout << fetch_command << std::endl;
-				assert(this->client != nullptr);
-				neuria::network::Send(this->client,
-					fetch_command.GetOneStepCloserNodeId(this->node_id),	
-					command::DispatchCommand(
-						this->command_id,
-						command::FetchCommand(
-							command::IsAnswer(true), fetch_command.GetRoute(), 
-							this->fetch_answer_redirector(
-								fetch_command.GetWrappedByteArray())
-						).Serialize()
-					).Serialize(),
-					[this](const neuria::network::ErrorCode& error_code){
-						this->os << "failed connect to answer. : " 
-							<< error_code << std::endl;	
-					}
-				);
+
+		if(fetch_command.IsAnswer()){
+			if(fetch_command.IsReturnBackToStart(this->node_id)){
+				this->Get(session, fetch_command);	
 			}
-			else{ //When Query
-				this->os << "on receive fetch query." << std::endl;
-				auto is_answer = 
-					this->is_turning_point_decider(fetch_command.GetRoute(), 
-						fetch_command.GetWrappedByteArray());
-				if(this->to_session_pool->GetSize() == 0){
-					std::cout << 
-						"...but no link. so unable to resolve fetch query." << std::endl;
+			else {
+				this->ReturnBack(fetch_command);
+			}
+		}
+		else {
+			fetch_command.AddRoute(this->node_id);
+			if(this->to_session_pool->IsEmpty()){
+				if(fetch_command.IsReturnBackToStart(this->node_id)){
+					this->os << 
+						"...but no link. so immediately return back." << std::endl;
+					this->ReturnBack(fetch_command);	
 				}
-				else{
-					auto redirect_byte_array = this->fetch_query_redirector(
-						fetch_command.GetWrappedByteArray());
-					this->at_random_selector(*(this->to_session_pool))->Send(
-						command::DispatchCommand(
-							this->command_id,
-							command::FetchCommand(
-								is_answer, fetch_command.GetRoute(), 
-								redirect_byte_array
-							).Serialize()
-						).Serialize(),
-						[](neuria::network::Session::Pointer){}
-					);
+				else {
+					this->Assert();
+				}	
+			}
+			else {
+				if(this->is_turning_point_decider(fetch_command.GetRoute(), 
+						fetch_command.GetWrappedByteArray())()){
+					this->os << "here is turning point" << std::endl;
+					this->ReturnBack(fetch_command);
+				}
+				else {
+					this->Query(fetch_command);	
 				}
 			}
 		}

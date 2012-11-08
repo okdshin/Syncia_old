@@ -7,13 +7,13 @@ using namespace syncia::filesystem;
 
 int main(int argc, char* argv[])
 {
-	auto watcher = AddRemoveFileInDirectoryWatcher(FileSystemPath("./test/"));
+	auto watcher = AddRemoveFileInDirectoryWatcher::Create(FileSystemPath("./test/"));
 
 	while(true){
 		sleep(1);
-		watcher.Check();
-		watcher.Call();
-		watcher.Update();
+		watcher->Check();
+		watcher->Call();
+		watcher->Update();
 		
 	}
 
