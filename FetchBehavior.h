@@ -67,61 +67,10 @@ private:
 		: command_id(command_id()), node_id(node_id), 
 		to_session_pool(to_session_pool), os(os){}
 
-	auto ReturnBack(const command::FetchCommand& fetch_command) -> void {
-		this->os << "ReturnBack" << std::endl;
-		this->os << fetch_command << std::endl;
-		assert(this->client != nullptr);
-		neuria::network::Send(this->client,
-			fetch_command.GetOneStepCloserNodeId(this->node_id),	
-			command::DispatchCommand(
-				this->command_id,
-				command::FetchCommand(
-					command::IsAnswer(true), fetch_command.GetRoute(), 
-					this->fetch_answer_redirector(
-						fetch_command.GetWrappedByteArray())
-				).Serialize()
-			).Serialize(),
-			[this](const neuria::network::ErrorCode& error_code){
-				this->os << "failed connect to answer. : " 
-					<< error_code << std::endl;	
-			}
-		);
-	}
-
-	auto Get(neuria::network::Session::Pointer session, 
-			const command::FetchCommand& fetch_command) -> void {
-		this->os << "Get" << std::endl;
-		this->os << fetch_command << std::endl;
-		this->on_receive_fetch_answer_func(session,
-			fetch_command.GetWrappedByteArray());
-	}
-
-	auto Query(const command::FetchCommand& fetch_command) -> void {
-		this->os << "Query" << std::endl;
-		this->os << fetch_command << std::endl;
-		auto redirect_byte_array = this->fetch_query_redirector(
-			fetch_command.GetWrappedByteArray());
-		std::cout << "to session pool:" << this->to_session_pool << std::endl;
-		assert(!this->to_session_pool->IsEmpty());
-		this->at_random_selector(*(this->to_session_pool))->Send(
-			command::DispatchCommand(
-				this->command_id,
-				command::FetchCommand(
-					command::IsAnswer(false), fetch_command.GetRoute(), 
-					redirect_byte_array
-				).Serialize()
-			).Serialize(),
-			[](neuria::network::Session::Pointer){}
-		);
-	}
-
-	auto Assert() -> void {
-		assert(!"invalid state.");	
-	}
-
 	auto OnReceivedFetchCommand(neuria::network::Session::Pointer session, 
 			const neuria::ByteArray& byte_array) -> void {
 		auto fetch_command = command::FetchCommand::Parse(byte_array);
+		this->os << fetch_command << std::endl;
 
 		if(fetch_command.IsAnswer()){
 			if(fetch_command.IsReturnBackToStart(this->node_id)){
@@ -155,6 +104,54 @@ private:
 			}
 		}
 	}
+	
+	auto ReturnBack(const command::FetchCommand& fetch_command) -> void {
+		this->os << "ReturnBack" << std::endl;
+		assert(this->client != nullptr);
+		auto new_fetch_command = command::FetchCommand(
+			command::IsAnswer(true), fetch_command.GetRoute(), 
+			this->fetch_answer_redirector(fetch_command.GetWrappedByteArray()));
+		this->os << "new fetch command: " << new_fetch_command << std::endl;
+		neuria::network::Send(this->client,
+			fetch_command.GetOneStepCloserNodeId(this->node_id),	
+			command::DispatchCommand(
+				this->command_id, new_fetch_command.Serialize()).Serialize(),
+			[this](const neuria::network::ErrorCode& error_code){
+				this->os << "failed connect to answer. : " 
+					<< error_code << std::endl;	
+			}
+		);
+	}
+
+	auto Get(neuria::network::Session::Pointer session, 
+			const command::FetchCommand& fetch_command) -> void {
+		this->os << "Get" << std::endl;
+		this->on_receive_fetch_answer_func(session,
+			fetch_command.GetWrappedByteArray());
+	}
+
+	auto Query(const command::FetchCommand& fetch_command) -> void {
+		this->os << "Query" << std::endl;
+		auto redirect_byte_array = this->fetch_query_redirector(
+			fetch_command.GetWrappedByteArray());
+		std::cout << "to session pool:" << this->to_session_pool << std::endl;
+		assert(!this->to_session_pool->IsEmpty());
+		this->at_random_selector(*(this->to_session_pool))->Send(
+			command::DispatchCommand(
+				this->command_id,
+				command::FetchCommand(
+					command::IsAnswer(false), fetch_command.GetRoute(), 
+					redirect_byte_array
+				).Serialize()
+			).Serialize(),
+			[](neuria::network::Session::Pointer){}
+		);
+	}
+
+	auto Assert() -> void {
+		assert(!"invalid state.");	
+	}
+
 
 	IsTurningPointDecider is_turning_point_decider;
 	FetchQueryRedirector fetch_query_redirector;
