@@ -86,7 +86,12 @@ private:
 				if(!fetch_command.IsReturnBackToStart(this->node_id)){
 					this->os << 
 						"...but no link. so immediately return back." << std::endl;
-					this->ReturnBack(fetch_command);	
+					auto new_fetch_command = command::FetchCommand(
+						command::IsAnswer(false), fetch_command.GetRoute(), 
+						this->fetch_query_redirector(
+							fetch_command.GetWrappedByteArray())
+					);
+					this->ReturnBack(new_fetch_command);	
 				}
 				else {
 					this->Assert();

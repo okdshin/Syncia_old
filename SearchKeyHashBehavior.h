@@ -88,8 +88,9 @@ private:
 	
 	auto RedirectFetchQuery(const neuria::ByteArray& byte_array) -> neuria::ByteArray {
 		auto command = command::SearchKeyHashCommand::Parse(byte_array);
-		command.AddFoundKeyHashList(
-			this->file_db->Search(command.GetSearchKeywordList()));
+		auto file_key_hash_list = this->file_db->Search(command.GetSearchKeywordList());
+		std::cout << "redirect fetch query. file key hash list is " << file_key_hash_list << std::endl;
+		command.AddFoundKeyHashList(file_key_hash_list);
 		return command.Serialize();
 	}
 
