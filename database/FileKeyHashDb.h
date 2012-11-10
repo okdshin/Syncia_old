@@ -15,7 +15,7 @@ namespace database{
 
 
 using FileKeyHashList = std::vector<FileKeyHash>;
-auto operator<<(std::ostream& os, 
+inline auto operator<<(std::ostream& os, 
 		const FileKeyHashList& key_hash_list) -> std::ostream& {
 	for(const auto& key_hash : key_hash_list){
 		os << key_hash << "\n";
