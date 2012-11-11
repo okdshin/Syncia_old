@@ -32,12 +32,10 @@ public:
 
 private:
     BehaviorDispatcher(boost::asio::io_service& service, std::ostream& os)
-		: service(service), os(os){}
+		: service(service), registered_func_strand(service), os(os){}
 
 	auto Dispatch(neuria::network::Session::Pointer session, 
 			const neuria::ByteArray& byte_array) -> void {
-		//this->os << "received dispatch command serialized byte array: " 
-		//	<< utl::ByteArray2String(byte_array) << std::endl;
 		auto command = command::DispatchCommand::Parse(byte_array);
 		this->os << "received dispatch command: " << command << std::endl;
 		if(this->func_dict.find(command.GetCommandId()()) == this->func_dict.end()){
@@ -48,9 +46,14 @@ private:
 		else{
 			this->os << "call command(id:" 
 				<< command.GetCommandId() << ")" << std::endl;
-			this->service.post([this, session, command](){
-				this->func_dict[command.GetCommandId()()](
-					session, command.GetWrappedByteArray());});
+			this->service.post(this->registered_func_strand.wrap(
+				[this, session, command](){
+					this->func_dict[command.GetCommandId()()](
+						session, 
+						command.GetWrappedByteArray()
+					);
+				}
+			));
 		}
 	}
 	
@@ -58,6 +61,7 @@ private:
 		std::ostream& os, const BehaviorDispatcher& dispatcher) -> std::ostream&;
 
 	boost::asio::io_service& service;
+	boost::asio::strand registered_func_strand;
 	std::map<command::CommandId::WrappedType, neuria::network::Session::OnReceivedFunc> func_dict;
 	std::ostream& os;
 };

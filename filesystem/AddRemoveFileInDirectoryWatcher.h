@@ -14,6 +14,8 @@ public:
 	using OnAddedFileListFunc = boost::function<void (const FileSystemPathList&)>;
 	using OnRemovedFileListFunc = boost::function<void (const FileSystemPathList&)>;
 
+	using OnRemovedDirectoryFunc = boost::function<void (const )>
+
 	static auto Create(const FileSystemPath& dir_path) -> Pointer {
 		return Pointer(new AddRemoveFileInDirectoryWatcher(dir_path));
 	}
@@ -28,8 +30,12 @@ public:
 	}
 
 	auto Check() -> void {
-		assert(IsExist(this->dir_path));
-		this->newer_file_path_list = this->GetCurrentFileListInDirectory();		
+		if(!IsExist(this->dir_path)){
+			this->newer_file_path_list.clear();
+		}
+		else{
+			this->newer_file_path_list = this->GetCurrentFileListInDirectory();		
+		}
 	}
 
 	auto Call() -> void {
