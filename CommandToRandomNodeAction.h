@@ -26,26 +26,19 @@ public:
 
 	auto CommandToRandomNode(const command::CommandId& command_id, 
 			const neuria::ByteArray& serialized_command_byte_array) -> void {
-		//assert(to_session_pool->GetSize() > 0);
 		if(to_session_pool->GetSize() == 0){
 			os << "no link." << std::endl;
 			return;	
 		}
 		
-		const auto serialized_dispatch_command = command::DispatchCommand(
-			command_id, serialized_command_byte_array
-		).Serialize();
-
-		this->os << "send serialized dispatch command byte array :\"" 
-			<< neuria::utility::ByteArray2String(serialized_dispatch_command) << "\"" << std::endl;;
-
 		this->at_random_selector(*(to_session_pool))->Send(
-			serialized_dispatch_command,
-			/*
 			command::DispatchCommand(
 				command_id, serialized_command_byte_array).Serialize(),
-			*/
-			[](neuria::network::Session::Pointer){});
+			neuria::network::Session::OnSendFinishedFunc(
+					[](neuria::network::Session::Pointer session){
+				//session->Close();
+			})
+		);
 	}
 
 private:

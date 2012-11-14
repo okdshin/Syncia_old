@@ -14,7 +14,7 @@ public:
 	using OnAddedFileListFunc = boost::function<void (const FileSystemPathList&)>;
 	using OnRemovedFileListFunc = boost::function<void (const FileSystemPathList&)>;
 
-	using OnRemovedDirectoryFunc = boost::function<void (const )>
+	//using OnRemovedDirectoryFunc = boost::function<void (const )>
 
 	static auto Create(const FileSystemPath& dir_path) -> Pointer {
 		return Pointer(new AddRemoveFileInDirectoryWatcher(dir_path));

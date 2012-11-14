@@ -149,7 +149,10 @@ private:
 					redirect_byte_array
 				).Serialize()
 			).Serialize(),
-			[](neuria::network::Session::Pointer){}
+			neuria::network::Session::OnSendFinishedFunc(
+				[this](neuria::network::Session::Pointer session){
+					//session->Close();
+			})
 		);
 	}
 

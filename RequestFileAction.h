@@ -59,6 +59,7 @@ public:
 				this->os << "replied file!: " 
 					<< command.GetFilePath().filename() << std::endl;
 				this->on_replied_file_func(command.GetFilePath());
+				session->Close();
 			},
 			[](neuria::network::Session::Pointer){}
 		);

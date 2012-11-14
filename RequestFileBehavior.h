@@ -40,9 +40,7 @@ private:
 		auto file_byte_array = database::SerializeFile(file_path, this->buffer_size);
 		session->Send(command::RequestFileAnswerCommand(
 			file_path, file_byte_array).Serialize(), 
-			[](neuria::network::Session::Pointer session){
-				session->Close();	
-			});
+			[](neuria::network::Session::Pointer session){});
 	}
 
 	int buffer_size;
