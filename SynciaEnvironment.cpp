@@ -6,21 +6,24 @@ using namespace syncia;
 
 int main(int argc, char* argv[])
 {
-	const int buffer_size = 128;
-	const unsigned int max_key_hash_count = 5;
-	const unsigned int spread_key_hash_max_count = 2;
-	const unsigned int max_hop_count = 3;
-	const unsigned int thread_num = 1;
 	int local_port = 54321;
-	if(argc == 3)
-	{
-		local_port = boost::lexical_cast<int>(argv[2]);
+	auto hostname = std::string("localhost");
+	if(argc > 1){
+		hostname = std::string(argv[1]);
+		if(argc == 3)
+		{
+			local_port = boost::lexical_cast<int>(std::string(argv[2]));
+		}	
 	}
+	auto node_id = neuria::network::CreateSocketNodeId(hostname, local_port);
+	std::cout << "NodeId is " << node_id << std::endl; 
 
-	std::cout << "LocalPort:" << local_port << std::endl;
-
-	const auto node_id = neuria::network::CreateSocketNodeId("localhost", local_port);
-
+	const int buffer_size = 128;
+	const unsigned int max_key_hash_count = 30;
+	const unsigned int spread_key_hash_max_count = 200;
+	const unsigned int max_hop_count = 6;
+	const unsigned int thread_num = 5;
+	
 	auto upper_pool = neuria::network::SessionPool::Create();
 	auto lower_pool = neuria::network::SessionPool::Create();
 	auto file_db = syncia::database::FileKeyHashDb::Create(0.3, buffer_size, std::cout);
