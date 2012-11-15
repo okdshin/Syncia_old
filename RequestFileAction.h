@@ -27,12 +27,18 @@ public:
 	using Pointer = boost::shared_ptr<RequestFileAction>;
 	using OnRepliedFileFunc = boost::function<void (const FileSystemPath&)>;
 
-	static auto Create(std::ostream& os) -> Pointer {
-		return Pointer(new RequestFileAction(os));
+	static auto Create(
+			const FileSystemPath& download_directory_path, 
+			std::ostream& os) -> Pointer {
+		return Pointer(new RequestFileAction(download_directory_path, os));
 	}
 
 	auto SetOnRepliedFileFunc(OnRepliedFileFunc on_replied_file_func) -> void {
 		this->on_replied_file_func = on_replied_file_func;
+	}
+
+	auto SetDownloadDirectoryPath(const FileSystemPath& path) -> void {
+		this->download_directory_path = path;
 	}
 
 	auto Bind(neuria::network::Client::Pointer client) -> void {
@@ -40,8 +46,7 @@ public:
 	}
 
 	auto RequestFile(const database::HashId& hash_id, 
-			const neuria::network::NodeId& node_id, 
-			const FileSystemPath& download_directory_path) -> void {
+			const neuria::network::NodeId& node_id) -> void {
 		neuria::network::Communicate(this->client, node_id,
 			[this](const neuria::network::ErrorCode& error_code){
 				this->os << "failed connect to request file: " 
@@ -51,10 +56,10 @@ public:
 				command::GetCommandId<command::RequestFileQueryCommand>(),
 				command::RequestFileQueryCommand(hash_id).Serialize()
 			).Serialize(),
-			[this, download_directory_path](neuria::network::Session::Pointer session, 
+			[this](neuria::network::Session::Pointer session, 
 					const neuria::ByteArray& byte_array){
 				auto command = command::RequestFileAnswerCommand::Parse(byte_array);
-				ParseFile(download_directory_path, command.GetFilePath(), 
+				ParseFile(this->download_directory_path, command.GetFilePath(), 
 					command.GetFileByteArray());
 				this->os << "replied file!: " 
 					<< command.GetFilePath().filename() << std::endl;
@@ -67,7 +72,9 @@ public:
 
 
 private:
-    RequestFileAction(std::ostream& os) : os(os){
+    RequestFileAction(
+		const FileSystemPath& download_directory_path, std::ostream& os) 
+				: download_directory_path(download_directory_path), os(os){
 		this->SetOnRepliedFileFunc(
 			[this](const FileSystemPath& file_path){
 				this->os << "file \"" << file_path 
@@ -80,6 +87,7 @@ private:
 
 	OnRepliedFileFunc on_replied_file_func;
 	neuria::network::Client::Pointer client;
+	FileSystemPath download_directory_path;
 	std::ostream& os;
 };
 

@@ -57,7 +57,7 @@ public:
 			node_id, spread_key_hash_max_count, max_hop_count, 
 			lower_session_pool, file_db, os);
 
-		auto request_file_action = RequestFileAction::Create(os);
+		auto request_file_action = RequestFileAction::Create(FileSystemPath("./"), os);
 		auto request_file_behavior = RequestFileBehavior::Create(
 			buffer_size, file_db, os);
 
@@ -84,6 +84,10 @@ public:
 	auto SetOnRepliedFileFunc(
 			RequestFileAction::OnRepliedFileFunc on_replied_file_func) -> void {
 		this->request_file_action->SetOnRepliedFileFunc(on_replied_file_func);
+	}
+
+	auto SetDownloadDirectoryPath(const FileSystemPath& path) -> void {
+		this->request_file_action->SetDownloadDirectoryPath(path);
 	}
 
 	auto AddUploadDirectory(const FileSystemPath& upload_directory_path) -> void {
@@ -124,11 +128,10 @@ public:
 		this->spread_key_hash_action->RequestSpreadKeyHash();
 	} 
 
-	auto RequestFile(const database::HashId& hash_id, 
-			const neuria::network::NodeId& node_id, 
-			const FileSystemPath& download_directory_path) -> void {
-		this->request_file_action->RequestFile(hash_id, node_id, 
-			download_directory_path);
+	auto RequestFile(
+			const database::HashId& hash_id, 
+			const neuria::network::NodeId& node_id) -> void {
+		this->request_file_action->RequestFile(hash_id, node_id);
 	}
 
 	auto Bind(neuria::network::Client::Pointer client) -> void {

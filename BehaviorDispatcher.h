@@ -46,14 +46,14 @@ private:
 		else{
 			this->os << "call command(id:" 
 				<< command.GetCommandId() << ")" << std::endl;
-			this->service.post(this->registered_func_strand.wrap(
+			this->service.post(/*this->registered_func_strand.wrap(*/
 				[this, session, command](){
 					this->func_dict[command.GetCommandId()()](
 						session, 
 						command.GetWrappedByteArray()
 					);
 				}
-			));
+			)/*)*/;
 		}
 	}
 	
