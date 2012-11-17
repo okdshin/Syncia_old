@@ -16,6 +16,7 @@
 #include "RequestFileAction.h"
 #include "RequestFileBehavior.h"
 #include "SynciaCore.h"
+#include "SynciaEnvironment.h"
 namespace syncia
 {
 
