@@ -6,6 +6,7 @@
 #include <boost/filesystem/path.hpp>
 #include "command/Command.h"
 #include "FileSystemPath.h"
+#include "database/DataBase.h"
 
 namespace syncia
 {
@@ -25,7 +26,7 @@ class RequestFileAction :
 		public boost::enable_shared_from_this<RequestFileAction> {
 public:
 	using Pointer = boost::shared_ptr<RequestFileAction>;
-	using OnRepliedFileFunc = boost::function<void (const FileSystemPath&)>;
+	using OnRepliedFileFunc = boost::function<void (const database::FileKeyHash&)>;
 
 	static auto Create(
 			const FileSystemPath& download_directory_path, 
@@ -45,8 +46,9 @@ public:
 		this->client = client;	
 	}
 
-	auto RequestFile(const database::HashId& hash_id, 
-			const neuria::network::NodeId& node_id) -> void {
+	auto RequestFile(const database::FileKeyHash& key_hash) -> void {
+		auto hash_id = key_hash.GetHashId();
+		auto node_id = key_hash.GetOwnerId();
 		neuria::network::Communicate(this->client, node_id,
 			[this](const neuria::network::ErrorCode& error_code){
 				this->os << "failed connect to request file: " 
@@ -56,14 +58,14 @@ public:
 				command::GetCommandId<command::RequestFileQueryCommand>(),
 				command::RequestFileQueryCommand(hash_id).Serialize()
 			).Serialize(),
-			[this](neuria::network::Session::Pointer session, 
+			[this, &key_hash](neuria::network::Session::Pointer session, 
 					const neuria::ByteArray& byte_array){
 				auto command = command::RequestFileAnswerCommand::Parse(byte_array);
 				ParseFile(this->download_directory_path, command.GetFilePath(), 
 					command.GetFileByteArray());
 				this->os << "replied file!: " 
 					<< command.GetFilePath().filename() << std::endl;
-				this->on_replied_file_func(command.GetFilePath());
+				this->on_replied_file_func(key_hash);
 				session->Close();
 			},
 			[](neuria::network::Session::Pointer){}
@@ -76,7 +78,8 @@ private:
 		const FileSystemPath& download_directory_path, std::ostream& os) 
 				: download_directory_path(download_directory_path), os(os){
 		this->SetOnRepliedFileFunc(
-			[this](const FileSystemPath& file_path){
+			[this](const database::FileKeyHash& key_hash){
+				auto file_path = key_hash.GetFilePath();
 				this->os << "file \"" << file_path 
 					<< "\" was replied! (this is default " 
 					<< "\"syncia::RequestFileAction::OnRepliedFileFunc\")" 

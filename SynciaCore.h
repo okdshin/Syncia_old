@@ -128,10 +128,8 @@ public:
 		this->spread_key_hash_action->RequestSpreadKeyHash();
 	} 
 
-	auto RequestFile(
-			const database::HashId& hash_id, 
-			const neuria::network::NodeId& node_id) -> void {
-		this->request_file_action->RequestFile(hash_id, node_id);
+	auto RequestFile(const database::FileKeyHash& key_hash) -> void {
+		this->request_file_action->RequestFile(key_hash);
 	}
 
 	auto Bind(neuria::network::Client::Pointer client) -> void {

@@ -87,6 +87,10 @@ inline auto operator <<(std::ostream& os, const FileKeyHash& key_hash) -> std::o
 	return os;
 }
 
+inline auto IsSameHashId(const FileKeyHash& left, const FileKeyHash& right) -> bool {
+	return left.GetHashId()() == right.GetHashId()();	
+}
+
 //for python binding
 inline auto operator==(const syncia::database::FileKeyHash& left, 
 		const syncia::database::FileKeyHash& right) -> bool {
