@@ -41,7 +41,20 @@ public:
 	}
 
 	auto StartAccept() -> void {
-		this->server->StartAccept();	
+		this->server->StartAccept(
+			neuria::network::Server::OnAcceptedFunc([this](
+					neuria::network::Session::Pointer session){
+				session->StartReceive(this->dispatcher->GetOnReceivedFunc());
+			}),
+			neuria::network::Server::OnFailedAcceptFunc([](
+					const neuria::network::ErrorCode){
+				//nothing
+			}),
+			neuria::network::Session::OnClosedFunc([](
+					neuria::network::Session::Pointer){
+				//nothing
+			})
+		);
 	}
 
 	auto Join() -> void {
@@ -73,7 +86,6 @@ private:
 			this->thread_group.create_thread(
 				boost::bind(&boost::asio::io_service::run, service_ptr));
 		}
-		SetOnReceivedFuncOnly(this->server, this->dispatcher->GetOnReceivedFunc());
 	}
 
 

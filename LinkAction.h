@@ -44,15 +44,19 @@ public:
 							this->node_id, wrapped_byte_array
 						).Serialize()
 					).Serialize(), 
-					[](neuria::network::Session::Pointer){});	
+					neuria::network::Session::OnSendFinishedFunc([this](
+							neuria::network::Session::Pointer session){
+						session->StartReceive([](
+								neuria::network::Session::Pointer session, 
+								const neuria::ByteArray& byte_array){	
+							//nothing
+						});
+					})
+				);	
 			},
 			[this](const neuria::network::ErrorCode& error_code){
 				std::cout << "link action error:" << error_code << std::endl;	
 				this->on_failed_create_link_func(error_code);
-			},
-			[this](neuria::network::Session::Pointer session, 
-					const neuria::ByteArray& byte_array){
-				this->os << "on receive from connected node!" << std::endl;//to do
 			},
 			[this](neuria::network::Session::Pointer session){
 				this->pool->Erase(session);	

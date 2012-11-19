@@ -8,6 +8,17 @@
 using namespace syncia;
 
 void TestCuiApp(int argc, char* argv[]){
+	int local_port = 54321;
+	auto hostname = std::string("localhost");
+	if(argc > 1){
+		hostname = std::string(argv[1]);
+		if(argc == 3)
+		{
+			local_port = boost::lexical_cast<int>(std::string(argv[2]));
+		}	
+	}
+	auto node_id = neuria::network::CreateSocketNodeId(hostname, local_port);
+	std::cout << "NodeId is " << node_id << std::endl; 
 	boost::asio::io_service service;
 	boost::asio::io_service::work w(service);
 	boost::thread t(boost::bind(&boost::asio::io_service::run, &service));
@@ -21,15 +32,19 @@ void TestCuiApp(int argc, char* argv[]){
 	
 	link_action->Bind(client);
 
-	auto shell = nr::utl::Shell(std::cout);
-	nr::utl::RegisterExitFunc(shell);
+	auto shell = neuria::test::CuiShell(std::cout);
+	neuria::test::RegisterExitFunc(shell);
 	shell.Register("link", "create new link.", 
-		[link_action](const nr::utl::Shell::ArgumentList& argument_list){
+		[link_action](const neuria::test::CuiShell::ArgList& argument_list){
 			link_action->CreateLink(
-				nr::utl::CreateSocketNodeId(
+				neuria::network::CreateSocketNodeId(
 					argument_list.at(1), 
 					boost::lexical_cast<int>(argument_list.at(2))),
-				nr::utl::String2ByteArray("link please!! 12345"));
+				neuria::utility::String2ByteArray("link please!! 12345"));
+		});
+	shell.Register("upper", "show upper linked sessions.", 
+		[connected_pool](const neuria::test::CuiShell::ArgList& args){
+			std::cout << "upper session: " << connected_pool << std::endl;
 		});
 	shell.Start();
 	t.join();

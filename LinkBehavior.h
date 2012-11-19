@@ -44,9 +44,10 @@ private:
 			[this](neuria::network::Session::Pointer session, 
 					const neuria::ByteArray& byte_array){
 				this->os << "on receive link query. wrapped byte is...\n" 
-				<< neuria::utility::ByteArray2String(byte_array) << "\n" 
-				<< "(this is default "
-				<< "\"syncia::LinkBehavior::OnReceivedLinkQueryFunc\")" <<std::endl;
+					<< neuria::utility::ByteArray2String(byte_array) << "\n" 
+					<< "(this is default "
+					<< "\"syncia::LinkBehavior::OnReceivedLinkQueryFunc\")" 
+					<<std::endl;
 			}
 		);
 
@@ -57,13 +58,27 @@ private:
 		this->os << "on receive link query." << std::endl;
 		auto command = command::LinkCommand::Parse(byte_array);
 		std::cout << "LowerNodeId:" << command.GetNodeId() << std::endl;
-		neuria::network::Connect(this->client, command.GetNodeId(), this->pool, 
-			[this](const neuria::network::ErrorCode& error_code){
-				this->os << error_code << std::endl;	
-			},
-			[](neuria::network::Session::Pointer, const neuria::ByteArray&){}
+		this->client->Connect(command.GetNodeId(),
+			neuria::network::Client::OnConnectedFunc([this](
+					neuria::network::Session::Pointer session){
+				this->pool->Add(session);
+				session->StartReceive(neuria::network::Session::OnReceivedFunc([](
+						neuria::network::Session::Pointer, const neuria::ByteArray&){
+					//nothing
+				}));
+			}),
+			neuria::network::Client::OnFailedConnectFunc([](
+					const neuria::network::ErrorCode& error_code){
+				//nothing	
+			}),
+			neuria::network::Session::OnClosedFunc([this](
+					neuria::network::Session::Pointer session){
+				this->pool->Erase(session);
+			})
 		);
-		this->on_receive_link_query_func(session, command.GetWrappedByteArray());
+		this->on_receive_link_query_func(
+			session, command.GetWrappedByteArray());
+
 	}
 
 	neuria::network::Session::OnReceivedFunc on_receive_link_query_func;

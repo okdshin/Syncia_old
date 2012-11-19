@@ -19,7 +19,6 @@ int main(int argc, char* argv[])
 	auto server = neuria::network::SocketServer::Create(
 		service, local_port, buffer_size, std::cout);
 	auto dispatcher = BehaviorDispatcher::Create(service, std::cout);
-	SetOnReceivedFuncOnly(server, dispatcher->GetOnReceivedFunc());
 	
 	auto client = neuria::network::SocketClient::Create(service, buffer_size, std::cout);
 
@@ -35,7 +34,20 @@ int main(int argc, char* argv[])
 	link_behavior->Bind(dispatcher);
 	link_behavior->Bind(client);
 
-	server->StartAccept();
+	server->StartAccept(
+		neuria::network::Server::OnAcceptedFunc([dispatcher](
+				neuria::network::Session::Pointer session){
+			session->StartReceive(dispatcher->GetOnReceivedFunc());
+		}),
+		neuria::network::Server::OnFailedAcceptFunc([](
+				const neuria::network::ErrorCode&){
+			//nothing
+		}),
+		neuria::network::Session::OnClosedFunc([pool](
+				neuria::network::Session::Pointer session){
+			//nothing
+		})
+	);
 	t.join();
     return 0;
 }
