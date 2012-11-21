@@ -49,7 +49,7 @@ public:
 	auto RequestFile(const database::FileKeyHash& key_hash) -> void {
 		auto node_id = key_hash.GetOwnerId();
 		this->client->Connect(node_id,
-			neuria::network::Client::OnConnectedFunc([this, &key_hash](
+			neuria::network::Client::OnConnectedFunc([this, key_hash](
 					neuria::network::Session::Pointer session){
 				session->Send(
 					command::DispatchCommand(
@@ -57,10 +57,10 @@ public:
 						command::RequestFileQueryCommand(
 							key_hash.GetHashId()).Serialize()
 					).Serialize(),					
-					neuria::network::Session::OnSendFinishedFunc([this, &key_hash](
+					neuria::network::Session::OnSendFinishedFunc([this, key_hash](
 							neuria::network::Session::Pointer session){
 						session->StartReceive(
-							neuria::network::Session::OnReceivedFunc([this, &key_hash](
+							neuria::network::Session::OnReceivedFunc([this, key_hash](
 									neuria::network::Session::Pointer session,
 									const neuria::ByteArray& byte_array){
 								auto command = command::RequestFileAnswerCommand::Parse(byte_array);

@@ -36,7 +36,14 @@ private:
 	auto OnReceivedRequestFileQuery(neuria::network::Session::Pointer session,
 			const neuria::ByteArray& byte_array) -> void {
 		auto command = command::RequestFileQueryCommand::Parse(byte_array);	
-		auto file_path = this->file_db->Get(command.GetRequestHashId()).GetFilePath();
+		auto file_path = FileSystemPath();
+		if(!this->file_db->IsContain(command.GetRequestHashId())){
+			this->os << "requested but the file is not threre..." << std::endl;	
+			file_path = FileSystemPath("./not_found.txt");
+		}
+		else {
+			file_path = this->file_db->Get(command.GetRequestHashId()).GetFilePath();
+		}
 		auto file_byte_array = database::SerializeFile(file_path, this->buffer_size);
 		session->Send(
 			command::RequestFileAnswerCommand(

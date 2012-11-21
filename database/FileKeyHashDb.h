@@ -118,6 +118,13 @@ public:
 		return *found;
 	}
 
+	auto IsContain(const HashId& hash_id) -> bool {
+		auto found = std::find_if(this->hash_list.begin(), this->hash_list.end(), 
+			[&hash_id](const FileKeyHash& key_hash){
+				return key_hash.GetHashId()() == hash_id(); });	
+		return found != this->hash_list.end();
+	}
+
 	auto Get(unsigned int index) -> FileKeyHash {
 		return this->hash_list.at(index);	
 	}
