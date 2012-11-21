@@ -146,6 +146,10 @@ public:
 		return newer_list;
 	}
 
+	auto GetFileKeyHashList() -> FileKeyHashList {
+		return this->hash_list;	
+	}
+
 	auto Erase(const HashId& hash_id) -> void {
 		this->hash_list.erase(
 			std::remove_if(this->hash_list.begin(), this->hash_list.end(), 
