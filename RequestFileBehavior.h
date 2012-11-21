@@ -38,9 +38,17 @@ private:
 		auto command = command::RequestFileQueryCommand::Parse(byte_array);	
 		auto file_path = this->file_db->Get(command.GetRequestHashId()).GetFilePath();
 		auto file_byte_array = database::SerializeFile(file_path, this->buffer_size);
-		session->Send(command::RequestFileAnswerCommand(
-			file_path, file_byte_array).Serialize(), 
-			[](neuria::network::Session::Pointer session){});
+		session->Send(
+			command::RequestFileAnswerCommand(
+				file_path, file_byte_array).Serialize(), 
+			neuria::network::Session::OnSendFinishedFunc([](
+					neuria::network::Session::Pointer session){
+			}),
+			neuria::network::Session::OnFailedSendFunc([](
+					const neuria::network::ErrorCode&){
+				//nothing	
+			})
+		);
 	}
 
 	int buffer_size;
@@ -49,4 +57,5 @@ private:
 };
 
 }
+
 

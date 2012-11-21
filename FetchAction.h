@@ -16,7 +16,8 @@ public:
 	using Pointer = boost::shared_ptr<FetchAction>;
 
 	static auto Create(const command::CommandId& command_id, 
-			neuria::network::SessionPool::Pointer to_session_pool, const neuria::network::NodeId& node_id, 
+			neuria::network::SessionPool::Pointer to_session_pool, 
+			const neuria::network::NodeId& node_id, 
 			std::ostream& os) -> Pointer { 
 		auto command_to_random_node_action = 
 			CommandToRandomNodeAction::Create(to_session_pool, os);
@@ -33,7 +34,6 @@ public:
 			).Serialize()
 		);
 	}
-
 
 private:
     FetchAction(CommandToRandomNodeAction::Pointer command_to_random_node_action,

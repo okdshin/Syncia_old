@@ -117,14 +117,31 @@ private:
 			command::IsAnswer(true), fetch_command.GetRoute(), 
 			this->fetch_answer_redirector(fetch_command.GetWrappedByteArray()));
 		this->os << "new fetch command: " << new_fetch_command << std::endl;
-		neuria::network::Send(this->client,
+	
+		this->client->Connect(
 			fetch_command.GetOneStepCloserNodeId(this->node_id),	
-			command::DispatchCommand(
-				this->command_id, new_fetch_command.Serialize()).Serialize(),
-			[this](const neuria::network::ErrorCode& error_code){
-				this->os << "failed connect to answer. : " 
-					<< error_code << std::endl;	
-			}
+			neuria::network::Client::OnConnectedFunc([this, new_fetch_command](
+					neuria::network::Session::Pointer session){
+				session->Send(
+					command::DispatchCommand(
+						this->command_id, new_fetch_command.Serialize()).Serialize(),
+					neuria::network::Session::OnSendFinishedFunc([](
+							neuria::network::Session::Pointer session){
+					}),
+					neuria::network::Session::OnFailedSendFunc([](
+							const neuria::network::ErrorCode&){
+						//nothing
+					})
+				);
+			}),
+			neuria::network::Client::OnFailedConnectFunc([](
+					const neuria::network::ErrorCode&){
+				//nothing	
+			}),
+			neuria::network::Session::OnClosedFunc([](
+					neuria::network::Session::Pointer){
+				//nothing
+			})
 		);
 	}
 
@@ -152,6 +169,10 @@ private:
 			neuria::network::Session::OnSendFinishedFunc(
 				[this](neuria::network::Session::Pointer session){
 					//session->Close();
+			}),
+			neuria::network::Session::OnFailedSendFunc([](
+					const neuria::network::ErrorCode&){
+				//nothing	
 			})
 		);
 	}

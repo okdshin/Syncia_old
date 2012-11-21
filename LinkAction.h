@@ -51,6 +51,10 @@ public:
 								const neuria::ByteArray& byte_array){	
 							//nothing
 						});
+					}),
+					neuria::network::Session::OnFailedSendFunc([](
+							const neuria::network::ErrorCode&){
+						//nothing
 					})
 				);	
 			},

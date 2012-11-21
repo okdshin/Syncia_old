@@ -47,28 +47,44 @@ public:
 	}
 
 	auto RequestFile(const database::FileKeyHash& key_hash) -> void {
-		auto hash_id = key_hash.GetHashId();
 		auto node_id = key_hash.GetOwnerId();
-		neuria::network::Communicate(this->client, node_id,
-			[this](const neuria::network::ErrorCode& error_code){
-				this->os << "failed connect to request file: " 
-					<< error_code << std::endl;
-			},
-			command::DispatchCommand(
-				command::GetCommandId<command::RequestFileQueryCommand>(),
-				command::RequestFileQueryCommand(hash_id).Serialize()
-			).Serialize(),
-			[this, &key_hash](neuria::network::Session::Pointer session, 
-					const neuria::ByteArray& byte_array){
-				auto command = command::RequestFileAnswerCommand::Parse(byte_array);
-				ParseFile(this->download_directory_path, command.GetFilePath(), 
-					command.GetFileByteArray());
-				this->os << "replied file!: " 
-					<< command.GetFilePath().filename() << std::endl;
-				this->on_replied_file_func(key_hash);
-				session->Close();
-			},
-			[](neuria::network::Session::Pointer){}
+		this->client->Connect(node_id,
+			neuria::network::Client::OnConnectedFunc([this, &key_hash](
+					neuria::network::Session::Pointer session){
+				session->Send(
+					command::DispatchCommand(
+						command::GetCommandId<command::RequestFileQueryCommand>(),
+						command::RequestFileQueryCommand(
+							key_hash.GetHashId()).Serialize()
+					).Serialize(),					
+					neuria::network::Session::OnSendFinishedFunc([this, &key_hash](
+							neuria::network::Session::Pointer session){
+						session->StartReceive(
+							neuria::network::Session::OnReceivedFunc([this, &key_hash](
+									neuria::network::Session::Pointer session,
+									const neuria::ByteArray& byte_array){
+								auto command = command::RequestFileAnswerCommand::Parse(byte_array);
+								ParseFile(this->download_directory_path, command.GetFilePath(), command.GetFileByteArray());
+								this->os << "replied file!: " 
+									<< command.GetFilePath().filename() << std::endl;
+								this->on_replied_file_func(key_hash);
+								session->Close();
+							})
+						);
+					}),
+					neuria::network::Session::OnFailedSendFunc([](
+							const neuria::network::ErrorCode&){
+						//nothing
+					})
+				);
+			}),
+			neuria::network::Client::OnFailedConnectFunc([](
+					const neuria::network::ErrorCode&){
+				//nothing	
+			}),
+			neuria::network::Session::OnClosedFunc([](neuria::network::Session::Pointer){
+				//nothing
+			})
 		);
 	}
 

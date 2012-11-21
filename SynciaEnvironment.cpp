@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 	const unsigned int max_key_hash_count = 30;
 	const unsigned int spread_key_hash_max_count = 200;
 	const unsigned int max_hop_count = 6;
-	const unsigned int thread_num = 5;
+	const unsigned int thread_num = 1;
 	
 	auto upper_pool = neuria::network::SessionPool::Create();
 	auto lower_pool = neuria::network::SessionPool::Create();
