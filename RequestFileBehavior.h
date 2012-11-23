@@ -50,7 +50,7 @@ private:
 				file_path, file_byte_array).Serialize(), 
 			neuria::network::Session::OnSendFinishedFunc([](
 					neuria::network::Session::Pointer session){
-				session->Close();
+				//session->Close();
 			}),
 			neuria::network::Session::OnFailedSendFunc([](
 					const neuria::network::ErrorCode&){

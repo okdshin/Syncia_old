@@ -68,7 +68,7 @@ public:
 								this->os << "replied file!: " 
 									<< command.GetFilePath().filename() << std::endl;
 								this->on_replied_file_func(key_hash);
-								//session->Close();
+								session->Close();
 							})
 						);
 					}),
