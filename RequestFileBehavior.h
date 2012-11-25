@@ -35,7 +35,7 @@ private:
 
 	auto OnReceivedRequestFileQuery(neuria::network::Session::Pointer session,
 			const neuria::ByteArray& byte_array) -> void {
-		auto command = command::RequestFileQueryCommand::Parse(byte_array);	
+		const auto command = command::RequestFileQueryCommand::Parse(byte_array);	
 		auto file_path = FileSystemPath();
 		if(!this->file_db->IsContain(command.GetRequestHashId())){
 			this->os << "requested but the file is not threre..." << std::endl;	
@@ -44,13 +44,14 @@ private:
 		else {
 			file_path = this->file_db->Get(command.GetRequestHashId()).GetFilePath();
 		}
-		auto file_byte_array = database::SerializeFile(file_path, this->buffer_size);
+		const auto file_byte_array = 
+			database::SerializeFile(file_path, this->buffer_size);
 		session->Send(
 			command::RequestFileAnswerCommand(
 				file_path, file_byte_array).Serialize(), 
 			neuria::network::Session::OnSendFinishedFunc([](
 					neuria::network::Session::Pointer session){
-				//session->Close();
+				session->Close();
 			}),
 			neuria::network::Session::OnFailedSendFunc([](
 					const neuria::network::ErrorCode&){

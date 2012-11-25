@@ -46,8 +46,12 @@ public:
 		this->client = client;	
 	}
 
+	auto OnReceived() -> void {
+		
+	}
+
 	auto RequestFile(const database::FileKeyHash& key_hash) -> void {
-		auto node_id = key_hash.GetOwnerId();
+		const auto node_id = key_hash.GetOwnerId();
 		this->client->Connect(node_id,
 			neuria::network::Client::OnConnectedFunc([this, key_hash](
 					neuria::network::Session::Pointer session){
@@ -56,15 +60,17 @@ public:
 						command::GetCommandId<command::RequestFileQueryCommand>(),
 						command::RequestFileQueryCommand(
 							key_hash.GetHashId()).Serialize()
-					).Serialize(),					
+					).Serialize(),
 					neuria::network::Session::OnSendFinishedFunc([this, key_hash](
 							neuria::network::Session::Pointer session){
 						session->StartReceive(
 							neuria::network::Session::OnReceivedFunc([this, key_hash](
 									neuria::network::Session::Pointer session,
 									const neuria::ByteArray& byte_array){
-								auto command = command::RequestFileAnswerCommand::Parse(byte_array);
-								ParseFile(this->download_directory_path, command.GetFilePath(), command.GetFileByteArray());
+								const auto command = 
+									command::RequestFileAnswerCommand::Parse(byte_array);
+								ParseFile(this->download_directory_path, 
+									command.GetFilePath(), command.GetFileByteArray());
 								this->os << "replied file!: " 
 									<< command.GetFilePath().filename() << std::endl;
 								this->on_replied_file_func(key_hash);
