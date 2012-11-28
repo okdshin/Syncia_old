@@ -16,7 +16,8 @@ public:
 	using Pointer = boost::shared_ptr<CommandToRandomNodeAction>;
 
 	static auto Create(
-			neuria::network::SessionPool::Pointer to_session_pool, std::ostream& os) -> Pointer {
+			neuria::network::SessionPool::Pointer to_session_pool, 
+			std::ostream& os) -> Pointer {
 		return Pointer(new CommandToRandomNodeAction(to_session_pool, os));
 	}
 	

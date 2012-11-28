@@ -81,11 +81,6 @@ public:
 		this->search_key_hash_behavior->SetOnReceivedAnswerFunc(on_received_func);
 	}
 
-	auto SetOnRepliedFileFunc(
-			RequestFileAction::OnRepliedFileFunc on_replied_file_func) -> void {
-		this->request_file_action->SetOnRepliedFileFunc(on_replied_file_func);
-	}
-
 	auto SetDownloadDirectoryPath(const FileSystemPath& path) -> void {
 		this->request_file_action->SetDownloadDirectoryPath(path);
 	}
@@ -128,8 +123,9 @@ public:
 		this->spread_key_hash_action->RequestSpreadKeyHash();
 	} 
 
-	auto RequestFile(const database::FileKeyHash& key_hash) -> void {
-		this->request_file_action->RequestFile(key_hash);
+	auto RequestFile(const database::FileKeyHash& key_hash, 
+			syncia::RequestFileAction::OnRepliedFileFunc on_replied_file_func) -> void {
+		this->request_file_action->RequestFile(key_hash, on_replied_file_func);
 	}
 
 	auto Bind(neuria::network::Client::Pointer client) -> void {

@@ -34,10 +34,6 @@ public:
 		return Pointer(new RequestFileAction(download_directory_path, os));
 	}
 
-	auto SetOnRepliedFileFunc(OnRepliedFileFunc on_replied_file_func) -> void {
-		this->on_replied_file_func = on_replied_file_func;
-	}
-
 	auto SetDownloadDirectoryPath(const FileSystemPath& path) -> void {
 		this->download_directory_path = path;
 	}
@@ -46,71 +42,73 @@ public:
 		this->client = client;	
 	}
 
-	auto OnReceived() -> void {
-		
-	}
-
-	auto RequestFile(const database::FileKeyHash& key_hash) -> void {
+	auto RequestFile(const database::FileKeyHash& key_hash, 
+			OnRepliedFileFunc on_replied_file_func) -> void {
 		const auto node_id = key_hash.GetOwnerId();
 		this->client->Connect(node_id,
-			neuria::network::Client::OnConnectedFunc([this, key_hash](
-					neuria::network::Session::Pointer session){
-				session->Send(
-					command::DispatchCommand(
-						command::GetCommandId<command::RequestFileQueryCommand>(),
-						command::RequestFileQueryCommand(
-							key_hash.GetHashId()).Serialize()
-					).Serialize(),
-					neuria::network::Session::OnSendFinishedFunc([this, key_hash](
-							neuria::network::Session::Pointer session){
-						session->StartReceive(
-							neuria::network::Session::OnReceivedFunc([this, key_hash](
-									neuria::network::Session::Pointer session,
-									const neuria::ByteArray& byte_array){
-								const auto command = 
-									command::RequestFileAnswerCommand::Parse(byte_array);
-								ParseFile(this->download_directory_path, 
-									command.GetFilePath(), command.GetFileByteArray());
-								this->os << "replied file!: " 
-									<< command.GetFilePath().filename() << std::endl;
-								this->on_replied_file_func(key_hash);
-								session->Close();
-							})
-						);
-					}),
-					neuria::network::Session::OnFailedSendFunc([](
-							const neuria::network::ErrorCode&){
-						//nothing
-					})
-				);
-			}),
+			neuria::network::Client::OnConnectedFunc(
+				boost::bind(&RequestFileAction::OnConnected, 
+				this->shared_from_this(), key_hash, on_replied_file_func, _1)),
 			neuria::network::Client::OnFailedConnectFunc([](
 					const neuria::network::ErrorCode&){
 				//nothing	
 			}),
-			neuria::network::Session::OnClosedFunc([](neuria::network::Session::Pointer){
+			neuria::network::Session::OnClosedFunc([](
+					neuria::network::Session::Pointer){
 				//nothing
 			})
 		);
 	}
 
+private:
+	auto OnConnected(const database::FileKeyHash& key_hash, 
+			OnRepliedFileFunc on_replied_file_func, 
+			neuria::network::Session::Pointer session) -> void {
+		session->Send(
+			command::DispatchCommand(
+				command::GetCommandId<command::RequestFileQueryCommand>(),
+				command::RequestFileQueryCommand(
+					key_hash.GetHashId()).Serialize()
+			).Serialize(),
+			neuria::network::Session::OnSendFinishedFunc(
+				boost::bind(&RequestFileAction::OnRequested, 
+					this->shared_from_this(), key_hash, on_replied_file_func, _1)),
+			neuria::network::Session::OnFailedSendFunc([](
+					const neuria::network::ErrorCode&){
+				//nothing
+			})
+		);	
+	}
+	
+	auto OnRequested(
+			const database::FileKeyHash& key_hash, 
+			OnRepliedFileFunc on_replied_file_func,
+			neuria::network::Session::Pointer session) -> void {
+		session->StartReceive(
+			boost::bind(&RequestFileAction::OnReceived, 
+				this->shared_from_this(), key_hash, on_replied_file_func, _1, _2
+			)
+		);	
+	}
+	
+	auto OnReceived(const database::FileKeyHash& key_hash, 
+			OnRepliedFileFunc on_replied_file_func,
+			neuria::network::Session::Pointer session, 
+			const neuria::ByteArray& byte_array) -> void {
+		const auto command = command::RequestFileAnswerCommand::Parse(byte_array);
+		ParseFile(this->download_directory_path, 
+			command.GetFilePath(), command.GetFileByteArray());
+		this->os << "replied file!: " 
+			<< command.GetFilePath().filename() << std::endl;
+		on_replied_file_func(key_hash);
+		session->Close();
+	}
 
 private:
     RequestFileAction(
 		const FileSystemPath& download_directory_path, std::ostream& os) 
-				: download_directory_path(download_directory_path), os(os){
-		this->SetOnRepliedFileFunc(
-			[this](const database::FileKeyHash& key_hash){
-				auto file_path = key_hash.GetFilePath();
-				this->os << "file \"" << file_path 
-					<< "\" was replied! (this is default " 
-					<< "\"syncia::RequestFileAction::OnRepliedFileFunc\")" 
-					<< std::endl;
-			}
-		);	
-	}
+				: download_directory_path(download_directory_path), os(os){}
 
-	OnRepliedFileFunc on_replied_file_func;
 	neuria::network::Client::Pointer client;
 	FileSystemPath download_directory_path;
 	std::ostream& os;
