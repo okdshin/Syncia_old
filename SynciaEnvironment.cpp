@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 		[syncia, file_db](const neuria::test::CuiShell::ArgList& args){
 			const auto file_key_hash = 
 				file_db->Get(boost::lexical_cast<unsigned int>(args.at(1)));
-			syncia->RequestFile(file_key_hash);
+			syncia->RequestFile(file_key_hash, [](const database::FileKeyHash&){});
 		});
 	
 	shell.Register("upper", ": show upper linked sessions.", 
